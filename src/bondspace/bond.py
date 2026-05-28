@@ -3,6 +3,24 @@ import numpy as np
 from pyscf import scf, gto, hessian
 
 
+def atom_overlap(mf: scf.hf.SCF):
+    mol: gto.Mole = mf.mol
+    ao_idx = np.asarray([x[0] for x in mol.ao_labels(fmt=False)])
+    ov = mf.get_ovlp()  # (nao, nao)
+    ov_grad = ov_gradient(mf)  # (natom, 3, nao, nao)
+
+    atom_ov = np.zeros((mol.natm, mol.natm))
+    np.add.at(atom_ov, (ao_idx[:, None], ao_idx[None, :]), ov)
+
+    atom_ov_grad = np.zeros((mol.natm, 3, mol.natm, mol.natm))
+    np.add.at(
+        atom_ov_grad,
+        (slice(None), slice(None), ao_idx[:, None], ao_idx[None, :]),
+        ov_grad,
+    )
+    return atom_ov, atom_ov_grad
+
+
 def bo(mf: scf.hf.SCF, ov=None, dm=None):
     mol: gto.Mole = mf.mol
     ao_idx = np.asarray([x[0] for x in mol.ao_labels(fmt=False)])

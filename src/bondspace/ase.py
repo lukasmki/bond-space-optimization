@@ -1,6 +1,6 @@
 from typing import cast
 import numpy as np
-from bondspace.bond import bo, bo_gradient
+from bondspace.bond import bo, bo_gradient, atom_overlap
 from bondspace.util import ase_to_pyscf
 from pyscf import gto, dft, grad, lib, scf
 
@@ -19,6 +19,7 @@ class PySCFCalculator(Calculator):
         basis: str = "cc-pvtz",
         verbose: int = 0,
         threads: int | None = None,
+        bo_grad: bool = False,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -38,6 +39,7 @@ class PySCFCalculator(Calculator):
         )
         if threads is not None:
             self.threads = lib.num_threads(n=threads)
+        self.bo_grad = bo_grad
 
         # private
         self.mo_coeff = None
@@ -61,6 +63,15 @@ class PySCFCalculator(Calculator):
         # bond order
         mf: scf.hf.SCF = self.forces_scanner.base
         bond_order = bo(mf)
+        if self.bo_grad:
+            bond_order_grad = bo_gradient(mf)
+            atoms.set_array(
+                "bond-order-grad",
+                np.reshape(
+                    bond_order_grad, (len(atoms), -1)
+                ),  # (natm, 3, natm, natm) -> (natm, 3*natm*natm)
+                bond_order_grad.dtype,
+            )
         atoms.set_array("bond-order", bond_order, bond_order.dtype)
 
         conn = []
@@ -86,6 +97,8 @@ class BondFluxCalculator(Calculator):
         spin: int | None = 0,
         xc: str = "HYB_GGA_XC_WB97X_D3",
         basis: str = "cc-pvtz",
+        thresh: float = 0.05,
+        ovlp_thresh: float = 0.1,
         verbose: int = 0,
         threads: int | None = None,
         **kwargs,
@@ -94,7 +107,8 @@ class BondFluxCalculator(Calculator):
         self.basis: str = basis
         self.charge: int = charge
         self.spin: int | None = spin
-
+        self.thresh: float = thresh
+        self.ovlp_thresh: float = ovlp_thresh
         self.bonds: list[tuple[int, int, int | float]] = bonds
 
         self.energy_pipe = (
@@ -117,30 +131,34 @@ class BondFluxCalculator(Calculator):
         self,
         BO: np.ndarray,
         BO_grad: np.ndarray,
+        ovlp: np.ndarray,
+        ovlp_grad: np.ndarray,
     ):
-        # norm_bond_grads = np.nan_to_num(
-        #     BO_grad / (np.linalg.norm(x=BO_grad, axis=1, keepdims=True) + 1e-8),
-        #     nan=0.0,
-        #     posinf=0.0,
-        #     neginf=0.0,
-        # )
-
+        # target bond order matrix
         bmat = np.full_like(BO, -1)
         for i, j, v in self.bonds:
             bmat[i, j] = v
             bmat[j, i] = v
+        bond_mask = bmat >= 0
 
-        mask = bmat >= 0
-        bond_energy = 0.5 * np.sum(np.square(mask * (BO - bmat)))
-        bond_forces = -np.sum(mask * (BO - bmat) * BO_grad, (-2, -1))
-        # bond_forces = -np.sum(mask * (BO - bmat) * norm_bond_grads, (-2, -1))
+        bond_energy = 0.5 * np.sum(np.square(bond_mask * (BO - bmat)))
+        bond_forces = -np.sum(bond_mask * (BO - bmat) * BO_grad, (-2, -1))
 
-        # bond_energy = 0.0
-        # bond_forces = np.zeros_like(pes_forces)
-        # for i, j, val in self.bonds:
-        #     bond_energy += 0.5 * np.square(bond_order[i][j] - val)
-        #     bond_forces += 1.0 * (bond_order[i][j] - val) * norm_bond_grads[:, :, i, j]
-        #     print(f"bond {i}, {j}, {val:0.2f}, {bond_order[i][j]:0.2f}")
+        max_error = np.max(bond_mask * (BO - bmat))
+        if max_error < self.thresh:
+            return 0.0, np.zeros_like(bond_forces)
+
+        # set bonds that should break
+        ovlp_mask = bond_mask & (bmat < self.ovlp_thresh)
+        for i, j in zip(*np.where(ovlp_mask)):
+            if j < i:
+                continue
+            ovlp_energy_ij = 0.5 * ovlp[i, j] * ovlp[i, j]
+            ovlp_force_ij = -ovlp[i, j] * ovlp_grad[:, :, i, j]
+            bond_energy += ovlp_energy_ij
+            bond_forces[i] += ovlp_force_ij[i]
+            bond_forces[j] -= ovlp_force_ij[j]
+
         return bond_energy, bond_forces
 
     def calculate(
@@ -163,7 +181,9 @@ class BondFluxCalculator(Calculator):
 
         bond_order = bo(mf)
         bond_order_grad = bo_gradient(mf)
+        aov, aov_grad = atom_overlap(mf)
 
+        # save bond/connectivity info
         conn = []
         for i in range(len(atoms)):
             for j in range(i + 1, len(atoms)):
@@ -175,6 +195,8 @@ class BondFluxCalculator(Calculator):
         bond_energy, bond_forces = self.harmonic_constraint(
             bond_order,
             bond_order_grad,
+            aov,
+            aov_grad,
         )
 
         self.results = {
