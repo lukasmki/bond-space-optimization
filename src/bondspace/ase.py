@@ -20,6 +20,7 @@ class PySCFCalculator(Calculator):
         verbose: int = 0,
         threads: int | None = None,
         bo_grad: bool = False,
+        level_shift: float | tuple[float, float] = 0.0,
         **kwargs,
     ):
         super().__init__(**kwargs)
@@ -31,7 +32,7 @@ class PySCFCalculator(Calculator):
             gto.M()
             .set(verbose=verbose)
             .apply(dft.UKS, xc=xc)
-            .set(conv_tol=1e-6)
+            .set(conv_tol=1e-6, level_shift=level_shift)
             .density_fit()
         )
         self.forces_scanner: grad.rhf.SCF_GradScanner = (
@@ -99,6 +100,7 @@ class BondFluxCalculator(Calculator):
         basis: str = "cc-pvtz",
         thresh: float = 0.05,
         ovlp_thresh: float = 0.1,
+        level_shift: float | tuple[float, float] = 0.0,
         verbose: int = 0,
         threads: int | None = None,
         **kwargs,
@@ -115,7 +117,7 @@ class BondFluxCalculator(Calculator):
             gto.M()
             .set(verbose=verbose)
             .apply(dft.UKS, xc=xc)
-            .set(conv_tol=1e-6)
+            .set(conv_tol=1e-6, level_shift=level_shift)
             .density_fit()
         )
         self.forces_scanner: grad.rhf.SCF_GradScanner = (
