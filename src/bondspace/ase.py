@@ -2,7 +2,10 @@ from typing import cast
 import numpy as np
 from bondspace.bond import bo, bo_gradient, atom_overlap
 from bondspace.util import ase_to_pyscf
-from pyscf import gto, dft, grad, lib, scf
+from pyscf import gto, lib, scf
+
+from pyscf import dft, grad
+# from gpu4pyscf import dft, grad
 
 from ase import Atoms, units
 from ase.calculators.calculator import Calculator, all_changes

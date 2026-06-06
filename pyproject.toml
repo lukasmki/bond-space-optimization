@@ -15,6 +15,12 @@ dependencies = [
 [project.scripts]
 bondspace = "bondspace:main"
 
+[project.optional-dependencies]
+cuda12 = [
+    "cutensor-cu12>=2.6.0",
+    "gpu4pyscf-cuda12x>=1.7.1",
+]
+
 [build-system]
 requires = ["uv_build>=0.9.9,<0.10.0"]
 build-backend = "uv_build"

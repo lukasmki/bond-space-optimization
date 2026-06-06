@@ -1,7 +1,9 @@
 from typing import cast
 import numpy as np
-from pyscf import scf, gto, hessian
+from pyscf import scf, gto
 
+# from pyscf import hessian
+# from gpu4pyscf import hessian
 
 def atom_overlap(mf: scf.hf.SCF):
     mol: gto.Mole = mf.mol
@@ -114,7 +116,7 @@ def dm_gradient(mf: scf.hf.SCF, ov_grad=None, atomlist=None):
     dma_oo, dmb_oo = dm_gradient_oo((mocca, moccb), ov_grad)
 
     # occupied-virtual
-    hess_uks = hessian.uks.Hessian(mf)
+    hess_uks = mf.Hessian()
     h1ao = hess_uks.make_h1(mo_coeff, mo_occ, atmlst=atomlist)
     mo1, mo1e = hess_uks.solve_mo1(mo_energy, mo_coeff, mo_occ, h1ao, atmlst=atomlist)
     mo1a, mo1b = mo1
