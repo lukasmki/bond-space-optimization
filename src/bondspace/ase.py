@@ -149,7 +149,10 @@ class BondFluxCalculator(Calculator):
         bond_energy = 0.5 * np.sum(np.square(bond_mask * (BO - bmat)))
         bond_forces = -np.sum(bond_mask * (BO - bmat) * BO_grad, (-2, -1))
 
-        max_error = np.max(bond_mask * (BO - bmat))
+        # magnitude, not signed: a bond that is under-formed (BO < target) has
+        # negative error, and masked-out pairs contribute 0, so a signed max
+        # reports 0.0 for any purely bond-forming target and stops immediately.
+        max_error = np.max(np.abs(bond_mask * (BO - bmat)))
         if max_error < self.thresh:
             return 0.0, np.zeros_like(bond_forces)
 
