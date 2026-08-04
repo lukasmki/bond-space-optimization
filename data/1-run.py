@@ -5,7 +5,16 @@
 4. P -> TS
 5. R -> P
 6. P -> R
+
+Set BONDSPACE_RXN to a single reaction stem (e.g. "rxn_03") to run only that
+one.  The reactions are independent, so a job array is the effective way to
+parallelise this -- see run.slurm.  Selecting explicitly is required rather
+than optional: the skip-if-output-exists check only sees a finished reaction,
+because the trajectory is written at the end, so array tasks launched together
+would all pick the same first pending reaction and duplicate the whole thing.
 """
+
+import os
 
 from bondspace.ase import BondFluxCalculator
 
@@ -17,7 +26,7 @@ import numpy as np
 
 from pathlib import Path
 
-from util import rxn_data
+from util import configure_threads, rxn_data
 
 
 def run(
@@ -40,20 +49,43 @@ def run(
         spin=spin,
         basis="cc-pvdz",
         thresh=0.05,
-        ovlp_thresh=2.0,
+        # Above the break targets (0.0), below every target meant to survive.
+        # This used to be 2.0, which put the overlap repulsion on all the 0.5
+        # and 1.0 targets as well.  That was survivable only while the
+        # correction was mis-signed and merely translated each pair; now that
+        # it genuinely separates them it fights the bonds being formed.  On
+        # rxn_03 R->TS it costs an order of magnitude: 0.479 vs 0.044 max
+        # bond-order error against the reference TS.
+        ovlp_thresh=0.5,
+        # One CPHF solve for the whole objective instead of one per atom.
+        # Exact, and the gain grows with system size.
+        zvector=True,
         level_shift=(0.3, 0.2),
     )
-    opt = FIRE2(atoms)
+    # maxstep well under FIRE2's 0.2 A default: the constraint energy is a sum
+    # of squared bond orders, so its scale is unrelated to a real PES and the
+    # default step overshoots into geometries where the SCF diverges.
+    opt = FIRE2(atoms, maxstep=0.05)
     opt.attach(add_image, 1, atoms)
-    opt.run(fmax=0.1, steps=50)
+    # Smaller steps need a larger budget; zvector roughly halves the per-step
+    # cost, so 80 steps here costs about what 50 used to.
+    opt.run(fmax=0.1, steps=80)
     return images
 
 
 if __name__ == "__main__":
+    configure_threads()
     root = Path(__file__).parent
     (root / "HCombustion-paths").mkdir(parents=True, exist_ok=True)
 
+    only = os.environ.get("BONDSPACE_RXN")
+    if only:
+        print(f"restricted to {only}", flush=True)
+
     for file in reversed(sorted((root / "HCombustion-bso").glob("*.xyz"))):
+        if only and file.stem != only:
+            continue
+
         outfile = root / "HCombustion-paths" / f"{file.stem}.xyz"
         if outfile.exists():
             continue

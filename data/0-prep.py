@@ -3,9 +3,10 @@ from typing import cast
 from pathlib import Path
 from ase import io, Atoms
 
-from util import rxn_data
+from util import configure_threads, rxn_data
 
 if __name__ == "__main__":
+    configure_threads()
     root = Path(__file__).parent
     (root / "HCombustion-bso").mkdir(parents=True, exist_ok=True)
     for file in sorted((root / "HCombustion").glob("*.xyz")):

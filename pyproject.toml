@@ -29,4 +29,12 @@ build-backend = "uv_build"
 [dependency-groups]
 dev = [
     "ipykernel>=7.2.0",
+    "pytest>=9.1.1",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+filterwarnings = [
+    # Raised from inside ase.atoms on every Atoms copy; not our code.
+    "ignore:Setting the shape on a NumPy array has been deprecated:DeprecationWarning",
 ]

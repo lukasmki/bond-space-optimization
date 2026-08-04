@@ -62,7 +62,9 @@ def species_label(atoms: Atoms, thresh: float = BOND_THRESH) -> str:
     return " + ".join(parts)
 
 
-def bond_list(atoms: Atoms, thresh: float = BOND_THRESH) -> list[tuple[int, int, float]]:
+def bond_list(
+    atoms: Atoms, thresh: float = BOND_THRESH
+) -> list[tuple[int, int, float]]:
     """Current bonds, with orders rounded to the nearest integer."""
     B = bond_matrix(atoms)
     return [
@@ -146,7 +148,9 @@ def target_bonds(
     return [(i, j, v) for (i, j), v in sorted(targets.items())]
 
 
-def preorient(atoms: Atoms, move: Move, sep: float = 2.2, thresh: float = BOND_THRESH) -> Atoms:
+def preorient(
+    atoms: Atoms, move: Move, sep: float = 2.2, thresh: float = BOND_THRESH
+) -> Atoms:
     """Bring fragments into bonding range before an association move.
 
     Bond order decays to zero between distant fragments, taking its
@@ -245,12 +249,19 @@ def drive(
         spin=spin,
         basis=basis,
         thresh=thresh,
+        zvector=True,
         ovlp_thresh=ovlp_thresh,
         level_shift=level_shift,
     )
 
     images: list[Atoms] = []
-    opt = FIRE2(atoms)
+    # maxstep well under FIRE2's 0.2 A default.  The constraint energy is a sum
+    # of squared bond orders, so its scale is unrelated to a real potential
+    # energy surface and the default step overshoots into geometries where the
+    # SCF diverges -- which 2-network.py would silently record as a failed edge
+    # rather than a missing one.  `relax` keeps the default, since it optimizes
+    # on the real PES with physically scaled forces.
+    opt = FIRE2(atoms, maxstep=0.05)
     opt.attach(lambda: images.append(atoms.copy()), 1)
     converged = bool(opt.run(fmax=fmax, steps=steps))
 

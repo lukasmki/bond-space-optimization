@@ -31,6 +31,7 @@ from network import (
     relax,
     species_label,
 )
+from util import configure_threads
 
 # Composition is fixed for the whole search, so charge and spin are too.
 # H2 + O2 has 18 electrons; spin 2 follows triplet O2, which is the ground
@@ -46,7 +47,10 @@ OVLP_THRESH = 0.5
 
 MAX_STATES = 12  # stop after this many distinct species
 MAX_DEPTH = 3  # BFS layers from the seed
-DRIVE_STEPS = 50
+# `drive` caps FIRE2's step at 0.05 A for stability, so a drive needs a larger
+# budget than a PES relaxation does; the adjoint gradient it uses roughly
+# halves the per-step cost, which pays for the extra steps.
+DRIVE_STEPS = 80
 RELAX_STEPS = 30
 
 
@@ -150,6 +154,7 @@ class Network:
 
 
 def main() -> None:
+    configure_threads()
     net = Network(Path(__file__).parent / "HCombustion-network")
     check_spin(seed(), CHARGE, SPIN)
 
