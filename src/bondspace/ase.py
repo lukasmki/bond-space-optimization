@@ -72,6 +72,7 @@ class PySCFCalculator(Calculator):
 
         # bond order
         mf: scf.hf.SCF = self.forces_scanner.base
+        self.mo_coeff = mf.mo_coeff
         bond_order = bo(mf)
         if self.bo_grad:
             bond_order_grad = bo_gradient(mf, atomlist=self.bo_grad_atoms)
@@ -280,7 +281,7 @@ class BondFluxCalculator(Calculator):
         # pes_forces = -pes_gradient
 
         mf: scf.hf.SCF = self.forces_scanner.base
-
+        self.mo_coeff = mf.mo_coeff
         atomlist = self.gradient_atoms()
         bond_order = bo(mf)
         aov, aov_grad = atom_overlap(mf, atomlist=atomlist)
