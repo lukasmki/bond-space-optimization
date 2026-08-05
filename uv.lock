@@ -42,6 +42,7 @@ source = { editable = "." }
 dependencies = [
     { name = "ase" },
     { name = "pyscf" },
+    { name = "pytblis" },
     { name = "scipy" },
 ]
 
@@ -63,6 +64,7 @@ requires-dist = [
     { name = "cutensor-cu12", marker = "extra == 'cuda12'", specifier = ">=2.6.0" },
     { name = "gpu4pyscf-cuda12x", marker = "extra == 'cuda12'", specifier = ">=1.7.1" },
     { name = "pyscf", specifier = ">=2.13.0" },
+    { name = "pytblis", specifier = ">=0.0.14" },
     { name = "scipy", specifier = ">=1.17.1" },
 ]
 provides-extras = ["cuda12"]
@@ -911,6 +913,20 @@ dependencies = [
 wheels = [
     { url = "https://files.pythonhosted.org/packages/0a/9b/9053d2a5a6276352b883d57192ce0bed68b1bc2415b35824ea6942c2c999/pyscf_dispersion-1.5.0-py3-none-manylinux_2_17_aarch64.manylinux2014_aarch64.whl", hash = "sha256:0b246142cadc752c54700564e15dadb22c006be51ac946601c59ddca21235067", size = 6469239, upload-time = "2026-02-14T20:11:11.671Z" },
     { url = "https://files.pythonhosted.org/packages/40/2f/10a2e9ad81bd5c2479a255d18c4f02c734a3a21bf4b36a236ba615919592/pyscf_dispersion-1.5.0-py3-none-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:c65aa46f24005794bf8198205a0d83f3431a23333868fbafff43bd82efc2294d", size = 12729963, upload-time = "2026-02-14T19:41:15.234Z" },
+]
+
+[[package]]
+name = "pytblis"
+version = "0.0.14"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/cc/ba/cbed9d8e76d3f98f21d7b4c4dfd2b7d8dfe81202fb0020dbeab37b7aeb87/pytblis-0.0.14.tar.gz", hash = "sha256:514306273bf2d52f50cc55424e0595d329dce23f0fea340dda30f51bde354c9d", size = 487122, upload-time = "2026-01-23T06:19:45.258Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c3/50/1debfbbe77c99e943b412569072ffe769f1c228d2efe76a25a2d65801f65/pytblis-0.0.14-cp312-abi3-macosx_12_0_arm64.whl", hash = "sha256:d387cbfb6989f57abb92aa73e2e59630456d3c8a66c20c0d0eb5a33503ff1be2", size = 1948590, upload-time = "2026-01-23T06:19:34.505Z" },
+    { url = "https://files.pythonhosted.org/packages/0d/f5/876f9b917dc7f6b40a6330c368efc37c994afb426a833c68e047d235ceb1/pytblis-0.0.14-cp312-abi3-manylinux_2_24_aarch64.manylinux_2_28_aarch64.whl", hash = "sha256:e06c8c1fd7db7360c9beee0d68140ea21cc3fa7ea7247d71c367b3b9d164053d", size = 2625498, upload-time = "2026-01-23T06:19:36.236Z" },
+    { url = "https://files.pythonhosted.org/packages/7e/e3/bdf9763f93b356d59bbb3d7c5a1cc291d6334a2b20169c3aaffbe1ec830f/pytblis-0.0.14-cp312-abi3-manylinux_2_24_x86_64.manylinux_2_28_x86_64.whl", hash = "sha256:f7cdb5268c3f68a9c884aa57c2a08024e8a100fd5e1898cb63049f00641a0dd6", size = 5932616, upload-time = "2026-01-23T06:19:38.231Z" },
 ]
 
 [[package]]

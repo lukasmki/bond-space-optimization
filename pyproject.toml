@@ -10,6 +10,7 @@ requires-python = ">=3.13"
 dependencies = [
     "ase>=3.28.0",
     "pyscf>=2.13.0",
+    "pytblis>=0.0.14",
     "scipy>=1.17.1",
 ]
 
