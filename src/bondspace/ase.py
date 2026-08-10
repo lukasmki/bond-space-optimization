@@ -26,10 +26,20 @@ class PySCFCalculator(Calculator):
         bo_grad: bool = False,
         bo_grad_atoms: list[int] | None = None,
         level_shift: float | tuple[float, float] = 0.0,
+        conv_tol: float = 1e-6,
+        reuse_guess: bool = True,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.basis: str = basis
+        # Seed each SCF from the previous geometry's orbitals.  Cheap when it
+        # works, but it makes the surface path-dependent: seeded from a stale
+        # guess the SCF can land on a different solution, and the energy then
+        # jumps by ~1 eV between adjacent geometries while the forces stay
+        # consistent with neither.  A BFGS relaxation driven that way oscillates
+        # instead of converging.  Set False whenever the *surface* has to be
+        # single-valued -- minimisations, Hessians, IRCs.
+        self.reuse_guess: bool = reuse_guess
         self.charge: int | None = charge
         self.spin: int | None = spin
         # Which atoms to solve the density response for; None means all.
@@ -41,7 +51,7 @@ class PySCFCalculator(Calculator):
             gto.M()
             .set(verbose=verbose)
             .apply(dft.UKS, xc=xc)
-            .set(conv_tol=1e-6, level_shift=level_shift)
+            .set(conv_tol=conv_tol, level_shift=level_shift)
             .density_fit()
         )
         self.forces_scanner: grad.rhf.SCF_GradScanner = (
@@ -72,7 +82,7 @@ class PySCFCalculator(Calculator):
 
         # bond order
         mf: scf.hf.SCF = self.forces_scanner.base
-        self.mo_coeff = mf.mo_coeff
+        self.mo_coeff = mf.mo_coeff if self.reuse_guess else None
         bond_order = bo(mf)
         if self.bo_grad:
             bond_order_grad = bo_gradient(mf, atomlist=self.bo_grad_atoms)
@@ -115,10 +125,15 @@ class BondFluxCalculator(Calculator):
         zvector: bool = False,
         verbose: int = 0,
         threads: int | None = None,
+        conv_tol: float = 1e-6,
+        reuse_guess: bool = True,
         **kwargs,
     ):
         super().__init__(**kwargs)
         self.basis: str = basis
+        # See PySCFCalculator: reusing the previous geometry's orbitals makes
+        # the endpoint of a drive depend on the trajectory that reached it.
+        self.reuse_guess: bool = reuse_guess
         self.charge: int = charge
         self.spin: int | None = spin
         self.thresh: float = thresh
@@ -133,7 +148,7 @@ class BondFluxCalculator(Calculator):
             gto.M()
             .set(verbose=verbose)
             .apply(dft.UKS, xc=xc)
-            .set(conv_tol=1e-6, level_shift=level_shift)
+            .set(conv_tol=conv_tol, level_shift=level_shift)
             .density_fit()
         )
         self.forces_scanner: grad.rhf.SCF_GradScanner = (
@@ -281,7 +296,7 @@ class BondFluxCalculator(Calculator):
         # pes_forces = -pes_gradient
 
         mf: scf.hf.SCF = self.forces_scanner.base
-        self.mo_coeff = mf.mo_coeff
+        self.mo_coeff = mf.mo_coeff if self.reuse_guess else None
         atomlist = self.gradient_atoms()
         bond_order = bo(mf)
         aov, aov_grad = atom_overlap(mf, atomlist=atomlist)

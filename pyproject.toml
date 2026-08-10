@@ -22,6 +22,13 @@ cuda12 = [
     "cutensor-cu12>=2.6.0",
     "gpu4pyscf-cuda12x>=1.7.1",
 ]
+# Reference machinery for experiments/: saddle-point optimisation, IRC, and
+# internal-coordinate minimisation.  Kept out of the core so that using the
+# calculators does not drag in a TS optimiser.
+bench = [
+    "sella>=2.3.5",
+    "geometric>=1.1",
+]
 
 [build-system]
 requires = ["uv_build>=0.9.9,<0.10.0"]
@@ -31,10 +38,14 @@ build-backend = "uv_build"
 dev = [
     "ipykernel>=7.2.0",
     "pytest>=9.1.1",
+    "matplotlib>=3.10.0",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "slow: needs an SCF or a Hessian; deselect with -m 'not slow'",
+]
 filterwarnings = [
     # Raised from inside ase.atoms on every Atoms copy; not our code.
     "ignore:Setting the shape on a NumPy array has been deprecated:DeprecationWarning",
