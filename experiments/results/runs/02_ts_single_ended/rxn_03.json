@@ -1,0 +1,123 @@
+{
+  "counters": {
+    "calculate_calls": 1
+  },
+  "experiment": "02_ts_single_ended",
+  "inputs_hash": "9832edeba1b21b1a",
+  "key": "rxn_03",
+  "level": {
+    "basis": "6-31g",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "barrier_error_kcal": -6.703056507217047,
+    "barrier_kcal": -9.962386962554782e-09,
+    "bond_max_all_pairs": 0.44882240833200926,
+    "bond_max_ref_pairs": 0.44882240833200926,
+    "bond_rms_all_pairs": 0.2525234248378209,
+    "category": "hydrogen",
+    "cphf_solves": 1,
+    "drive_calls": 1,
+    "drive_converged": true,
+    "drive_outcome": "flat_gradient_stall",
+    "drive_steps": 0,
+    "drive_target_error": 0.49214820833200923,
+    "energy_ev": -2091.3512816507555,
+    "energy_gap_kcal": 6.703056507217046,
+    "equation": "OH + H2 -> H2O + H",
+    "highest_tier": 1,
+    "idpp_rmsd_heavy": 0.3221199376595335,
+    "irc_connects": false,
+    "irc_expected": [
+      "H + H2O",
+      "H2 + HO"
+    ],
+    "irc_observed": [
+      "H2 + HO"
+    ],
+    "midpoint_rmsd_heavy": 0.3221199376595335,
+    "mode_overlap_bonds": 0.22720376886418392,
+    "mode_overlap_reference": 0.6115677632146891,
+    "n_imaginary": 1,
+    "omega_imaginary": -50.87185195843638,
+    "pes_residual_ev_ang": 0.04827606805766162,
+    "reaction": "rxn_03",
+    "refine_converged": true,
+    "refine_displacement_rmsd": 0.15806314710465458,
+    "refine_gradient_calls": 23,
+    "refine_steps": 15,
+    "refined_n_imaginary": 1,
+    "rmsd_all": 0.5426061103801303,
+    "rmsd_heavy": 0.5426061103801303,
+    "rung": "L1",
+    "spin_changes": false,
+    "targets": [
+      [
+        0,
+        1,
+        0.5
+      ],
+      [
+        1,
+        3,
+        0.5
+      ]
+    ],
+    "tiers": {
+      "T0": true,
+      "T1": true,
+      "T2": false,
+      "T3": true,
+      "T4": false
+    },
+    "wavenumbers": [
+      -50.87185195843638,
+      142.7605360495178,
+      236.41498880168234,
+      245.99676996198568,
+      3563.2108859316468,
+      4439.8794509492645
+    ]
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "02_ts_single_ended",
+    "key": "rxn_03",
+    "params": {
+      "reaction": "rxn_03",
+      "rung": "L1"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 31.713561666896567
+  },
+  "traceback": null
+}

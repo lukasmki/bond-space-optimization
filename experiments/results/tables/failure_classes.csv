@@ -1,0 +1,10 @@
+experiment,key,status,inputs_hash,restarted,wall_seconds,hostname,git_commit,class_id,class_name,count
+10_failure_atlas,1,ok,,,,,,1,SCF non-convergence,0
+10_failure_atlas,2,ok,,,,,,2,optimizer step limit,1
+10_failure_atlas,3,ok,,,,,,3,flat-gradient stall (|F| < fmax while max|dB| > 0.2),10
+10_failure_atlas,4,ok,,,,,,4,early-stop artifact (thresh triggered with error elsewhere),0
+10_failure_atlas,5,ok,,,,,,5,"converged to the wrong structure (minimum, higher saddle, other reaction)",0
+10_failure_atlas,6,ok,,,,,,6,spin-state error (another multiplicity is lower at this geometry),0
+10_failure_atlas,7,ok,,,,,,7,spectator freezing under restrict_gradient,0
+10_failure_atlas,8,ok,,,,,,8,reference-side failure -- NOT a method failure,23
+10_failure_atlas,9,ok,,,,,,9,barrierless: no saddle exists at this level,0

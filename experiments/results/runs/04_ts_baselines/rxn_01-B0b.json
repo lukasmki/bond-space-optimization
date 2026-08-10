@@ -1,0 +1,125 @@
+{
+  "counters": {},
+  "experiment": "04_ts_baselines",
+  "inputs_hash": "159bd7a2d2465187",
+  "key": "rxn_01-B0b",
+  "level": {
+    "basis": "sto-3g",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "barrier_error_kcal": 1257.3343482580242,
+    "category": "oxygen",
+    "highest_tier": -1,
+    "irc_connects": false,
+    "label": "IDPP midpoint",
+    "method": "B0b",
+    "n_imaginary": 1,
+    "n_runs": 1,
+    "reaction": "rxn_01",
+    "rmsd_heavy": 0.2166165220470888,
+    "rung": "L0",
+    "runs": [
+      {
+        "barrier_error_kcal": 1257.3343482580242,
+        "barrier_kcal": 1131.9042836173664,
+        "bond_max_all_pairs": 0.86282608,
+        "bond_max_ref_pairs": 0.86282608,
+        "bond_rms_all_pairs": 0.5469214385418096,
+        "energy_ev": -4044.252549306837,
+        "energy_gap_kcal": 1257.3343482580242,
+        "guess_converged": true,
+        "guess_method": "idpp",
+        "guess_pes_calls": 0,
+        "guess_rmsd_heavy": 0.2166165220470888,
+        "highest_tier": -1,
+        "irc_connects": false,
+        "irc_expected": [
+          "H + O2"
+        ],
+        "irc_observed": [
+          "HO2"
+        ],
+        "mode_overlap_bonds": 0.14740084779298962,
+        "mode_overlap_reference": 0.016663234125920162,
+        "n_imaginary": 1,
+        "note": "",
+        "omega_imaginary": -1300.5771974412182,
+        "pes_residual_ev_ang": 11.453516821327074,
+        "refine_converged": true,
+        "refine_displacement_rmsd": 0.3738328940920679,
+        "refine_gradient_calls": 22,
+        "refine_steps": 15,
+        "refined_n_imaginary": 1,
+        "rmsd_all": 0.46469406005245234,
+        "rmsd_heavy": 0.2166165220470888,
+        "rung": "L0",
+        "tier_label": "none",
+        "tiers": {
+          "T0": false,
+          "T1": false,
+          "T2": true,
+          "T3": true,
+          "T4": false
+        },
+        "total_pes_calls": 22,
+        "wavenumbers": [
+          -1300.5771974412182,
+          368.508030812188,
+          408.56009513437107,
+          408.5602637254748
+        ]
+      }
+    ],
+    "spin_changes": false,
+    "tiers": {
+      "T0": false,
+      "T1": false,
+      "T2": true,
+      "T3": true,
+      "T4": false
+    },
+    "total_pes_calls": 22
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "04_ts_baselines",
+    "key": "rxn_01-B0b",
+    "params": {
+      "method": "B0b",
+      "reaction": "rxn_01"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 21.29888379201293
+  },
+  "traceback": null
+}

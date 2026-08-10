@@ -1,0 +1,56 @@
+{
+  "counters": {},
+  "experiment": "02_ts_single_ended",
+  "inputs_hash": "8a5f80b908730e53",
+  "key": "rxn_01",
+  "level": {
+    "basis": "sto-3g",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "excluded": true,
+    "exclusion_reason": "no verified reference from E01",
+    "reaction": "rxn_01"
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "02_ts_single_ended",
+    "key": "rxn_01",
+    "params": {
+      "reaction": "rxn_01",
+      "rung": "L1"
+    }
+  },
+  "status": "skipped",
+  "timings": {
+    "wall_seconds": 0.014453709125518799
+  },
+  "traceback": null
+}

@@ -1,0 +1,340 @@
+{
+  "barrierless_candidates": [
+    "rxn_01"
+  ],
+  "class_definitions": {
+    "1": "SCF non-convergence",
+    "2": "optimizer step limit",
+    "3": "flat-gradient stall (|F| < fmax while max|dB| > 0.2)",
+    "4": "early-stop artifact (thresh triggered with error elsewhere)",
+    "5": "converged to the wrong structure (minimum, higher saddle, other reaction)",
+    "6": "spin-state error (another multiplicity is lower at this geometry)",
+    "7": "spectator freezing under restrict_gradient",
+    "8": "reference-side failure -- NOT a method failure",
+    "9": "barrierless: no saddle exists at this level"
+  },
+  "counts": {
+    "1": 0,
+    "2": 1,
+    "3": 10,
+    "4": 0,
+    "5": 0,
+    "6": 0,
+    "7": 0,
+    "8": 23,
+    "9": 0
+  },
+  "excluded_reactions": {
+    "rxn_01": "sella did not converge",
+    "rxn_03": "IRC did not connect the intended endpoints"
+  },
+  "experiments_analysed": [
+    "02_ts_single_ended",
+    "03_information_ladder",
+    "04_ts_baselines",
+    "05_target_sharpness",
+    "06_path_vs_irc",
+    "08_ablations"
+  ],
+  "n_excluded": 2,
+  "rows": [
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "02_ts_single_ended",
+      "key": "rxn_01",
+      "reaction": "rxn_01",
+      "status": "skipped"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "flat-gradient stall (|F| < fmax while max|dB| > 0.2)"
+      ],
+      "classes": [
+        8,
+        3
+      ],
+      "experiment": "02_ts_single_ended",
+      "key": "rxn_03",
+      "reaction": "rxn_03",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "03_information_ladder",
+      "key": "rxn_01-L0",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "flat-gradient stall (|F| < fmax while max|dB| > 0.2)"
+      ],
+      "classes": [
+        8,
+        3
+      ],
+      "experiment": "03_information_ladder",
+      "key": "rxn_01-L1",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "03_information_ladder",
+      "key": "rxn_01-L2",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "04_ts_baselines",
+      "key": "rxn_01-B0a",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "04_ts_baselines",
+      "key": "rxn_01-B0b",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "04_ts_baselines",
+      "key": "rxn_01-B1",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "04_ts_baselines",
+      "key": "rxn_01-B1r",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "04_ts_baselines",
+      "key": "rxn_01-B2",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "04_ts_baselines",
+      "key": "rxn_01-B3",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "04_ts_baselines",
+      "key": "rxn_01-B4",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "flat-gradient stall (|F| < fmax while max|dB| > 0.2)"
+      ],
+      "classes": [
+        8,
+        3
+      ],
+      "experiment": "05_target_sharpness",
+      "key": "rxn_03-asymmetric-0.30",
+      "reaction": "rxn_03",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "flat-gradient stall (|F| < fmax while max|dB| > 0.2)"
+      ],
+      "classes": [
+        8,
+        3
+      ],
+      "experiment": "05_target_sharpness",
+      "key": "rxn_03-symmetric-0.30",
+      "reaction": "rxn_03",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "06_path_vs_irc",
+      "key": "rxn_01-bondspace",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure"
+      ],
+      "classes": [
+        8
+      ],
+      "experiment": "06_path_vs_irc",
+      "key": "rxn_01-linear",
+      "reaction": "rxn_01",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "optimizer step limit"
+      ],
+      "classes": [
+        8,
+        2
+      ],
+      "experiment": "08_ablations",
+      "key": "rxn_03-fmax-0.01",
+      "reaction": "rxn_03",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "flat-gradient stall (|F| < fmax while max|dB| > 0.2)"
+      ],
+      "classes": [
+        8,
+        3
+      ],
+      "experiment": "08_ablations",
+      "key": "rxn_03-fmax-0.05",
+      "reaction": "rxn_03",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "flat-gradient stall (|F| < fmax while max|dB| > 0.2)"
+      ],
+      "classes": [
+        8,
+        3
+      ],
+      "experiment": "08_ablations",
+      "key": "rxn_03-full_connectivity-True",
+      "reaction": "rxn_03",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "flat-gradient stall (|F| < fmax while max|dB| > 0.2)"
+      ],
+      "classes": [
+        8,
+        3
+      ],
+      "experiment": "08_ablations",
+      "key": "rxn_03-optimizer-BFGS",
+      "reaction": "rxn_03",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "flat-gradient stall (|F| < fmax while max|dB| > 0.2)"
+      ],
+      "classes": [
+        8,
+        3
+      ],
+      "experiment": "08_ablations",
+      "key": "rxn_03-ovlp_thresh-0.0",
+      "reaction": "rxn_03",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "flat-gradient stall (|F| < fmax while max|dB| > 0.2)"
+      ],
+      "classes": [
+        8,
+        3
+      ],
+      "experiment": "08_ablations",
+      "key": "rxn_03-perturb-0.05-0",
+      "reaction": "rxn_03",
+      "status": "ok"
+    },
+    {
+      "class_names": [
+        "reference-side failure -- NOT a method failure",
+        "flat-gradient stall (|F| < fmax while max|dB| > 0.2)"
+      ],
+      "classes": [
+        8,
+        3
+      ],
+      "experiment": "08_ablations",
+      "key": "rxn_03-reference",
+      "reaction": "rxn_03",
+      "status": "ok"
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "counters": {},
+  "experiment": "03_information_ladder",
+  "inputs_hash": "6c002185d18c9240",
+  "key": "rxn_01-L0",
+  "level": {
+    "basis": "6-31g",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "barrier_error_kcal": -29.966434340990034,
+    "barrier_kcal": -155.39649898164788,
+    "bond_max_all_pairs": 0.27350062105047257,
+    "bond_max_ref_pairs": 0.27350062105047257,
+    "bond_rms_all_pairs": 0.16652056470853485,
+    "category": "oxygen",
+    "drive_calls": 30,
+    "drive_outcome": "converged",
+    "drive_steps": 28,
+    "drive_target_error": 0.1070990605235973,
+    "energy_ev": -4100.075194194776,
+    "energy_gap_kcal": 29.96643434099004,
+    "highest_tier": 4,
+    "irc_connects": true,
+    "irc_expected": [
+      "H + O2"
+    ],
+    "irc_observed": [
+      "H + O2"
+    ],
+    "mode_overlap_bonds": 0.07455920543889336,
+    "mode_overlap_reference": 0.011713783075832974,
+    "n_imaginary": 1,
+    "n_targets": 2,
+    "omega_imaginary": -1768.0345013169872,
+    "pes_residual_ev_ang": 2.3479804819955654,
+    "reaction": "rxn_01",
+    "refine_converged": true,
+    "refine_displacement_rmsd": 0.051220676409792734,
+    "refine_gradient_calls": 6,
+    "refine_steps": 3,
+    "refined_n_imaginary": 1,
+    "rmsd_all": 0.1374952461349493,
+    "rmsd_heavy": 0.092728516885832,
+    "rung": "L0",
+    "rung_information": "reference R and P bond-order matrices (not single-ended)",
+    "spin_changes": false,
+    "targets": [
+      [
+        0,
+        1,
+        1.5
+      ],
+      [
+        1,
+        2,
+        0.5
+      ]
+    ],
+    "tiers": {
+      "T0": true,
+      "T1": true,
+      "T2": true,
+      "T3": true,
+      "T4": true
+    },
+    "wavenumbers": [
+      -1768.0345013169872,
+      605.2436829750568,
+      605.243998563407,
+      1532.0669236831036
+    ]
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "03_information_ladder",
+    "key": "rxn_01-L0",
+    "params": {
+      "reaction": "rxn_01",
+      "rung": "L0"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 52.11466912482865
+  },
+  "traceback": null
+}

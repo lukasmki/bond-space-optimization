@@ -1,0 +1,80 @@
+{
+  "counters": {},
+  "experiment": "04_ts_baselines",
+  "inputs_hash": "1c9695f6a9dd9173",
+  "key": "rxn_01-B1r",
+  "level": {
+    "basis": "sto-3g",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "category": "oxygen",
+    "label": "Dimer (random direction)",
+    "method": "B1r",
+    "n_runs": 2,
+    "reaction": "rxn_01",
+    "rung": "L2",
+    "runs": [
+      {
+        "error": "RuntimeError: SCF did not converge; cannot trust a Hessian",
+        "guess_converged": false,
+        "guess_method": "dimer-random-0",
+        "guess_pes_calls": 76,
+        "guess_rmsd_heavy": 0.790347548901012,
+        "note": "",
+        "rung": "L2"
+      },
+      {
+        "error": "RuntimeError: SCF did not converge; cannot trust a Hessian",
+        "guess_converged": false,
+        "guess_method": "dimer-random-1",
+        "guess_pes_calls": 77,
+        "guess_rmsd_heavy": 0.7540491088811865,
+        "note": "",
+        "rung": "L2"
+      }
+    ],
+    "spin_changes": false
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "04_ts_baselines",
+    "key": "rxn_01-B1r",
+    "params": {
+      "method": "B1r",
+      "reaction": "rxn_01"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 74.77877374994569
+  },
+  "traceback": null
+}

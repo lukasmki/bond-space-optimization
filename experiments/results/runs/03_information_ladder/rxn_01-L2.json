@@ -1,0 +1,108 @@
+{
+  "counters": {},
+  "experiment": "03_information_ladder",
+  "inputs_hash": "7ca2976cc76a189a",
+  "key": "rxn_01-L2",
+  "level": {
+    "basis": "6-31g",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "category": "oxygen",
+    "enumeration_truncated": false,
+    "moves": [
+      {
+        "barrier_kcal": 954.614958973472,
+        "drive_outcome": "early_stop",
+        "energy_ev": -4051.940542001161,
+        "highest_tier": -1,
+        "irc_connects": false,
+        "irc_observed": null,
+        "move": "break[O0-O1=0]",
+        "n_imaginary": 2,
+        "rmsd_heavy": 0.24114588876722726,
+        "targets": [
+          [
+            0,
+            1,
+            0.5
+          ]
+        ]
+      },
+      {
+        "barrier_kcal": 181.00506139888057,
+        "drive_outcome": "flat_gradient_stall",
+        "energy_ev": -4085.4874419781127,
+        "highest_tier": 2,
+        "irc_connects": false,
+        "irc_observed": null,
+        "move": "form[O0-H2=1]",
+        "n_imaginary": 2,
+        "rmsd_heavy": 0.15316415788545823,
+        "targets": [
+          [
+            0,
+            1,
+            1.0
+          ],
+          [
+            0,
+            2,
+            0.5
+          ]
+        ]
+      }
+    ],
+    "n_correct": 0,
+    "n_moves_enumerated": 2,
+    "n_saddles": 0,
+    "precision": 0.0,
+    "reaction": "rxn_01",
+    "recall": false,
+    "rung": "L2",
+    "rung_information": "the reactant alone, plus enumerated bond rearrangements",
+    "spin_changes": false,
+    "true_ts_rank_by_barrier": null
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "03_information_ladder",
+    "key": "rxn_01-L2",
+    "params": {
+      "reaction": "rxn_01",
+      "rung": "L2"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 99.49198775016703
+  },
+  "traceback": null
+}

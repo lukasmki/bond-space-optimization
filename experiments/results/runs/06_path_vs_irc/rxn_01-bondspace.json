@@ -1,0 +1,81 @@
+{
+  "counters": {},
+  "experiment": "06_path_vs_irc",
+  "inputs_hash": "c23501d059e6e67b",
+  "key": "rxn_01-bondspace",
+  "level": {
+    "basis": "sto-3g",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "category": "oxygen",
+    "endpoint_correct": true,
+    "expected_species": "H + O2",
+    "final_species": "H + O2",
+    "method": "bondspace",
+    "min_rmsd_to_ts": 0.09604220441017605,
+    "n_frames": 12,
+    "overshoot_kcal": 3494.9339867673975,
+    "path_converged": true,
+    "path_outcome": "converged",
+    "peak_kcal": 3369.50392212674,
+    "pes_calls": 11,
+    "profile_energies_ev": [
+      -4035.630914818688,
+      -4034.9847470083037,
+      -4033.5839844669154,
+      -4027.6389144326427,
+      -4022.4714816396167,
+      -4015.2664726683456,
+      -4005.367792836915,
+      -3973.128485331444,
+      -3947.2210460945867,
+      -3947.2210460945867
+    ],
+    "profile_scf_failures": 0,
+    "reaction": "rxn_01",
+    "reference_irc_frames": 0,
+    "spin_changes": false
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "06_path_vs_irc",
+    "key": "rxn_01-bondspace",
+    "params": {
+      "method": "bondspace",
+      "reaction": "rxn_01"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 12.189977707806975
+  },
+  "traceback": null
+}

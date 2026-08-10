@@ -1,0 +1,2 @@
+experiment,key,status,inputs_hash,restarted,wall_seconds,hostname,git_commit,bond_thresh,charge,n_edges,n_edges_with_product,n_nodes,n_verified,precision,recall_denominator,recall_discovered,recall_verified,sector,seed,spin
+07_network_discovery,h2_o2,ok,350b75f5613896a8,False,250.25327229197137,wifi-10-44-166-226.wifi.berkeley.edu,b2d810fac630583d557c8d314eb6e18040b8e547,0.5,0,6,1,2,0,0.0,4,1,0,h2_o2,H2 + O2,2

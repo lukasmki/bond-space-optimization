@@ -1,0 +1,107 @@
+{
+  "counters": {},
+  "experiment": "03_information_ladder",
+  "inputs_hash": "45e4db92ec2c79f1",
+  "key": "rxn_01-L1",
+  "level": {
+    "basis": "6-31g",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "barrier_error_kcal": 393.9577877209091,
+    "barrier_kcal": 268.52772308025123,
+    "bond_max_all_pairs": 0.4679973387863041,
+    "bond_max_ref_pairs": 0.4679973387863041,
+    "bond_rms_all_pairs": 0.2872429157273431,
+    "category": "oxygen",
+    "drive_calls": 29,
+    "drive_outcome": "flat_gradient_stall",
+    "drive_steps": 27,
+    "drive_target_error": 0.4964178100795756,
+    "energy_ev": -4081.6921001833052,
+    "energy_gap_kcal": 393.9577877209091,
+    "highest_tier": 2,
+    "mode_overlap_bonds": 2.8451868110960434e-06,
+    "mode_overlap_reference": 0.7716635147183365,
+    "n_imaginary": 2,
+    "n_targets": 2,
+    "omega_imaginary": -1593.4383640666342,
+    "pes_residual_ev_ang": 148.03222964542422,
+    "reaction": "rxn_01",
+    "refine_converged": false,
+    "refine_displacement_rmsd": 0.6067389082291709,
+    "refine_gradient_calls": 60,
+    "refine_steps": 30,
+    "rmsd_all": 0.1648941880105521,
+    "rmsd_heavy": 0.18006823197173102,
+    "rung": "L1",
+    "rung_information": "the chemical equation: integer Lewis orders and the atom mapping",
+    "spin_changes": false,
+    "targets": [
+      [
+        0,
+        1,
+        1.0
+      ],
+      [
+        1,
+        2,
+        0.5
+      ]
+    ],
+    "tiers": {
+      "T0": true,
+      "T1": true,
+      "T2": true,
+      "T3": false,
+      "T4": false
+    },
+    "wavenumbers": [
+      -1593.4383640666342,
+      -1593.4382406777072,
+      1825.1462173725938,
+      5895.882178308903
+    ]
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "03_information_ladder",
+    "key": "rxn_01-L1",
+    "params": {
+      "reaction": "rxn_01",
+      "rung": "L1"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 79.58557825000025
+  },
+  "traceback": null
+}

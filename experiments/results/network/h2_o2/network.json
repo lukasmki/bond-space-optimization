@@ -1,0 +1,252 @@
+{
+  "bond_thresh": 0.5,
+  "budget": {
+    "drive_steps": 30,
+    "max_depth": 1,
+    "max_states": 3
+  },
+  "charge": 0,
+  "composition": {
+    "H": 2,
+    "O": 2
+  },
+  "edges": [
+    {
+      "depth": 0,
+      "drive_converged": true,
+      "drive_outcome": "flat_gradient_stall",
+      "kind": "break",
+      "move": "break[H0-H1=0]",
+      "product_relaxed": true,
+      "source": "H2 + O2",
+      "target": "H2 + O2"
+    },
+    {
+      "depth": 0,
+      "drive_converged": true,
+      "drive_outcome": "flat_gradient_stall",
+      "kind": "break",
+      "move": "break[O2-O3=0]",
+      "product_relaxed": true,
+      "source": "H2 + O2",
+      "target": "H2 + O2"
+    },
+    {
+      "depth": 0,
+      "drive_converged": true,
+      "drive_outcome": "flat_gradient_stall",
+      "kind": "transfer",
+      "move": "transfer[H0-H1=0,H0-O2=1]",
+      "product_relaxed": true,
+      "source": "H2 + O2",
+      "target": "H + HO2",
+      "verification": {
+        "failure": "ValueError: array must not contain infs or NaNs",
+        "verified": false
+      }
+    },
+    {
+      "depth": 0,
+      "drive_converged": false,
+      "drive_outcome": "step_limit",
+      "kind": "transfer",
+      "move": "transfer[H0-H1=0,H0-O3=1]",
+      "product_relaxed": true,
+      "source": "H2 + O2",
+      "target": "H + HO2"
+    },
+    {
+      "depth": 0,
+      "drive_converged": false,
+      "drive_outcome": "step_limit",
+      "kind": "transfer",
+      "move": "transfer[H0-H1=0,H1-O2=1]",
+      "product_relaxed": true,
+      "source": "H2 + O2",
+      "target": "H + HO2"
+    },
+    {
+      "depth": 0,
+      "drive_converged": false,
+      "drive_outcome": "step_limit",
+      "kind": "transfer",
+      "move": "transfer[H0-H1=0,H1-O3=1]",
+      "product_relaxed": true,
+      "source": "H2 + O2",
+      "target": "H + HO2"
+    }
+  ],
+  "max_degree_prior": {
+    "H": 1,
+    "O": 2
+  },
+  "n_edges": 6,
+  "n_edges_with_product": 1,
+  "n_nodes": 2,
+  "n_verified": 0,
+  "nodes": [
+    "H + HO2",
+    "H2 + O2"
+  ],
+  "precision": 0.0,
+  "recall_denominator": 4,
+  "recall_discovered": 1,
+  "recall_table": [
+    {
+      "discovered": false,
+      "equation": "O + OH -> O2 + H",
+      "excluded_because": "different composition",
+      "id": "rxn_01",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "O + H2 -> OH + H",
+      "excluded_because": "different composition",
+      "id": "rxn_02",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "OH + H2 -> H2O + H",
+      "excluded_because": "different spin parity",
+      "id": "rxn_03",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "H2O2 -> H2O + O",
+      "excluded_because": "",
+      "id": "rxn_04",
+      "in_search_space": true,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "H2 -> H + H",
+      "excluded_because": "different composition",
+      "id": "rxn_05",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "O2 -> O + O",
+      "excluded_because": "different composition",
+      "id": "rxn_06",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "OH -> O + H",
+      "excluded_because": "different composition",
+      "id": "rxn_07",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "H2O -> OH + H",
+      "excluded_because": "different composition",
+      "id": "rxn_08",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "HO2 -> H + O2",
+      "excluded_because": "different composition",
+      "id": "rxn_09",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": true,
+      "equation": "HO2 + H -> O2 + H2",
+      "excluded_because": "",
+      "id": "rxn_10",
+      "in_search_space": true,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "H + HO2 -> OH + OH",
+      "excluded_because": "",
+      "id": "rxn_11",
+      "in_search_space": true,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "HO2 + O -> O2 + OH",
+      "excluded_because": "different spin parity",
+      "id": "rxn_12",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "O2 + H2O -> HO2 + OH",
+      "excluded_because": "different composition",
+      "id": "rxn_13",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "H2O2 + O2 -> HO2 + HO2",
+      "excluded_because": "different composition",
+      "id": "rxn_14",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "H2O2 -> OH + OH",
+      "excluded_because": "",
+      "id": "rxn_15",
+      "in_search_space": true,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "OH + H2O -> H2O2 + H",
+      "excluded_because": "different composition",
+      "id": "rxn_16",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "HO2 + H2 -> H2O2 + H",
+      "excluded_because": "different composition",
+      "id": "rxn_17",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "HO2 + OH -> H2O2 + O",
+      "excluded_because": "different composition",
+      "id": "rxn_18",
+      "in_search_space": false,
+      "verified": false
+    },
+    {
+      "discovered": false,
+      "equation": "H2O2 + OH -> HO2 + H2O",
+      "excluded_because": "different composition",
+      "id": "rxn_19",
+      "in_search_space": false,
+      "verified": false
+    }
+  ],
+  "recall_verified": 0,
+  "sector": "h2_o2",
+  "seed": "H2 + O2",
+  "spin": 2
+}

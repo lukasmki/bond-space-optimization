@@ -1,0 +1,75 @@
+{
+  "counters": {
+    "repeats": 1
+  },
+  "experiment": "09_scaling",
+  "inputs_hash": "99a224ad7d2eacca",
+  "key": "H2O-1-cc-pvdz",
+  "level": {
+    "basis": "cc-pvdz",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "basis": "cc-pvdz",
+    "direct_cphf_solves": 9,
+    "direct_seconds_all": [
+      1.4981356249190867
+    ],
+    "direct_seconds_median": 1.4981356249190867,
+    "discarded_gradient_fraction": 0.2908562418704746,
+    "energy_gradient_seconds": 0.43479025014676154,
+    "energy_only_seconds": 0.3083287919871509,
+    "formula": "H2O",
+    "natoms": 3,
+    "nbasis": 24,
+    "speedup_direct_over_zvector": 1.5221542677129292,
+    "system": "H2O-1",
+    "zvector_cphf_solves": 1,
+    "zvector_seconds_all": [
+      0.984220625134185
+    ],
+    "zvector_seconds_median": 0.984220625134185,
+    "zvector_vs_direct_max_abs": 2.222535227689934e-06
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "09_scaling",
+    "key": "H2O-1-cc-pvdz",
+    "params": {
+      "basis": "cc-pvdz",
+      "system": "H2O-1"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 3.3314884579740465
+  },
+  "traceback": null
+}

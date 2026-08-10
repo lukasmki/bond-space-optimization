@@ -1,0 +1,105 @@
+{
+  "counters": {},
+  "experiment": "01_reference_states",
+  "inputs_hash": "dc72870aca0eb03f",
+  "key": "rxn_01",
+  "level": {
+    "basis": "6-31g",
+    "conv_tol": 1e-10,
+    "density_fit": true,
+    "level_shift": 0.0,
+    "name": "verify-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "barrier_kcal": -125.43006464065785,
+    "category": "oxygen",
+    "charge": 0,
+    "dataset_ts_energy_ev": -4100.173996732266,
+    "dataset_ts_max_force": 2.9793911655333063,
+    "dataset_ts_n_imaginary": 1,
+    "dataset_ts_omega": -1668.7565154590814,
+    "equation": "O + OH -> O2 + H",
+    "exclusion_reason": "sella did not converge",
+    "integer_disagreements": [
+      {
+        "distance_ang": 2.047347467285677,
+        "lewis": 0,
+        "mayer": 1.08751485,
+        "pair": [
+          0,
+          1
+        ],
+        "reaction": "rxn_01",
+        "rounded": 1,
+        "side": "r"
+      }
+    ],
+    "irc_connects": false,
+    "n_integer_disagreements": 1,
+    "natoms": 3,
+    "p_energy_ev": -4101.352893101094,
+    "p_max_force": 1.680611642211218,
+    "p_relax_steps": 40,
+    "p_relaxed": false,
+    "p_species": "H + O2",
+    "r_energy_ev": -4093.336564267147,
+    "r_max_force": 43.77243177029634,
+    "r_relax_steps": 40,
+    "r_relaxed": false,
+    "r_species": "H + O2",
+    "reaction": "rxn_01",
+    "reaction_energy_kcal": -184.86093595577708,
+    "reverse_barrier_kcal": 59.43087131511924,
+    "spin": 3,
+    "spin_changes": false,
+    "ts_energy_ev": -4098.775726622483,
+    "ts_max_force": 9.081777760357847,
+    "ts_n_imaginary": 1,
+    "ts_omega_imaginary": -1001.9098087286735,
+    "ts_refine_converged": false,
+    "ts_refine_gradient_calls": 45,
+    "ts_refine_steps": 40,
+    "ts_shift_rmsd_all": 0.1469923556480009,
+    "ts_shift_rmsd_heavy": 0.11361945793093152,
+    "ts_wavenumbers": [
+      -1001.9098087286735,
+      1123.8435002000053,
+      2312.2852159746612
+    ],
+    "verified": false
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "01_reference_states",
+    "key": "rxn_01",
+    "params": {
+      "reaction": "rxn_01"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 78.74996029213071
+  },
+  "traceback": null
+}

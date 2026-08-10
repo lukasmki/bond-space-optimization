@@ -1,0 +1,104 @@
+{
+  "counters": {},
+  "experiment": "01_reference_states",
+  "inputs_hash": "a8afe48c1713eae7",
+  "key": "rxn_03",
+  "level": {
+    "basis": "6-31g",
+    "conv_tol": 1e-10,
+    "density_fit": true,
+    "level_shift": 0.0,
+    "name": "verify-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "barrier_kcal": 6.70305649725466,
+    "category": "hydrogen",
+    "charge": 0,
+    "dataset_ts_energy_ev": -2091.0496661089987,
+    "dataset_ts_max_force": 0.746337048420271,
+    "dataset_ts_n_imaginary": 1,
+    "dataset_ts_omega": -1504.8687673852005,
+    "equation": "OH + H2 -> H2O + H",
+    "exclusion_reason": "IRC did not connect the intended endpoints",
+    "integer_disagreements": [],
+    "irc_connects": false,
+    "irc_expected": [
+      "H + H2O",
+      "H2 + HO"
+    ],
+    "irc_forward_converged": true,
+    "irc_observed": [
+      "H2 + HO"
+    ],
+    "irc_reverse_converged": true,
+    "n_integer_disagreements": 0,
+    "natoms": 4,
+    "p_energy_ev": -2091.582496037365,
+    "p_max_force": 0.007647911188744319,
+    "p_relax_steps": 16,
+    "p_relaxed": true,
+    "p_species": "H + H2O",
+    "r_energy_ev": -2091.3512816503235,
+    "r_max_force": 0.0482761235582118,
+    "r_relax_steps": 57,
+    "r_relaxed": true,
+    "r_species": "H2 + HO",
+    "reaction": "rxn_03",
+    "reaction_energy_kcal": -5.331930473457398,
+    "reverse_barrier_kcal": 12.034986970712056,
+    "spin": 1,
+    "spin_changes": false,
+    "ts_energy_ev": -2091.060609611925,
+    "ts_max_force": 0.011655183508573004,
+    "ts_n_imaginary": 1,
+    "ts_omega_imaginary": -1482.3646719641185,
+    "ts_refine_converged": true,
+    "ts_refine_gradient_calls": 9,
+    "ts_refine_steps": 2,
+    "ts_shift_rmsd_all": 0.02494533404195835,
+    "ts_shift_rmsd_heavy": 0.0,
+    "ts_wavenumbers": [
+      -1482.3646719641185,
+      623.8402660392743,
+      683.568453003969,
+      1294.6248467368264,
+      1855.193149534401,
+      3640.7567404989527
+    ],
+    "verified": false
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "01_reference_states",
+    "key": "rxn_03",
+    "params": {
+      "reaction": "rxn_03"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 69.57952925004065
+  },
+  "traceback": null
+}

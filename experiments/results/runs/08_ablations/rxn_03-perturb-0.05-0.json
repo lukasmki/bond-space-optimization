@@ -1,0 +1,119 @@
+{
+  "counters": {},
+  "experiment": "08_ablations",
+  "inputs_hash": "8e457c073f5eb6bd",
+  "key": "rxn_03-perturb-0.05-0",
+  "level": {
+    "basis": "sto-3g",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "barrier_error_kcal": 643.6663431680703,
+    "barrier_kcal": 650.369399665325,
+    "bond_max_all_pairs": 0.45438473541984314,
+    "bond_max_ref_pairs": 0.45438473541984314,
+    "bond_rms_all_pairs": 0.26521962316589787,
+    "category": "hydrogen",
+    "cphf_solves": 1,
+    "drive_calls": 1,
+    "drive_converged": true,
+    "drive_kwargs": {
+      "fmax": 0.1,
+      "fresh_guess": false,
+      "maxstep": 0.05,
+      "optimizer": "FIRE2",
+      "ovlp_thresh": 0.5,
+      "restrict_gradient": false,
+      "steps": 30,
+      "thresh": 0.05,
+      "zvector": true
+    },
+    "drive_outcome": "flat_gradient_stall",
+    "drive_steps": 0,
+    "drive_target_error": 0.49783559774341507,
+    "energy_ev": -2063.14859542947,
+    "energy_gap_kcal": 643.6663431680704,
+    "highest_tier": 1,
+    "knob": "perturb",
+    "level": {
+      "basis": "sto-3g",
+      "conv_tol": 1e-06,
+      "density_fit": true,
+      "level_shift": [
+        0.3,
+        0.2
+      ],
+      "name": "production-smoke",
+      "xc": "HYB_GGA_XC_WB97X_D3"
+    },
+    "n_imaginary": 0,
+    "n_targets": 2,
+    "omega_imaginary": NaN,
+    "pes_residual_ev_ang": 2.057121765056575,
+    "reaction": "rxn_03",
+    "rmsd_all": 0.5898826929934643,
+    "rmsd_heavy": 0.5898826929934643,
+    "seed": 0,
+    "spin_changes": false,
+    "tier_label": "T1",
+    "tiers": {
+      "T0": true,
+      "T1": true,
+      "T2": false,
+      "T3": false,
+      "T4": false
+    },
+    "value": 0.05,
+    "wavenumbers": [
+      42.34633600063874,
+      336.8276860619268,
+      1183.7221731358059,
+      1191.8898469593712,
+      3605.3770608935465,
+      4428.690692460722
+    ]
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "08_ablations",
+    "key": "rxn_03-perturb-0.05-0",
+    "params": {
+      "knob": "perturb",
+      "reaction": "rxn_03",
+      "seed": 0,
+      "value": 0.05
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 3.9551329580135643
+  },
+  "traceback": null
+}

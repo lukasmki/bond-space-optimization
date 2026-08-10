@@ -1,0 +1,71 @@
+{
+  "counters": {},
+  "experiment": "04_ts_baselines",
+  "inputs_hash": "40856d05b1f43b8c",
+  "key": "rxn_01-B1",
+  "level": {
+    "basis": "sto-3g",
+    "conv_tol": 1e-06,
+    "density_fit": true,
+    "level_shift": [
+      0.3,
+      0.2
+    ],
+    "name": "production-smoke",
+    "xc": "HYB_GGA_XC_WB97X_D3"
+  },
+  "metrics": {
+    "category": "oxygen",
+    "label": "Dimer (bond direction)",
+    "method": "B1",
+    "n_runs": 1,
+    "reaction": "rxn_01",
+    "rung": "L1",
+    "runs": [
+      {
+        "error": "RuntimeError: SCF did not converge; cannot trust a Hessian",
+        "guess_converged": false,
+        "guess_method": "dimer",
+        "guess_pes_calls": 82,
+        "guess_rmsd_heavy": 1.3168320755736354,
+        "note": "",
+        "rung": "L1"
+      }
+    ],
+    "spin_changes": false
+  },
+  "provenance": {
+    "cpus_allocated": null,
+    "git": {
+      "commit": "b2d810fac630583d557c8d314eb6e18040b8e547",
+      "dirty": true
+    },
+    "hostname": "wifi-10-44-166-226.wifi.berkeley.edu",
+    "packages": {
+      "ase": "3.29.0",
+      "geometric": "1.1.1",
+      "numpy": "2.5.1",
+      "pyscf": "2.14.0",
+      "python": "3.13.5",
+      "scipy": "1.18.0",
+      "sella": "unknown"
+    },
+    "platform": "macOS-15.7.7-arm64-arm-64bit-Mach-O",
+    "slurm_job": null
+  },
+  "restarted": false,
+  "schema_version": 1,
+  "spec": {
+    "experiment": "04_ts_baselines",
+    "key": "rxn_01-B1",
+    "params": {
+      "method": "B1",
+      "reaction": "rxn_01"
+    }
+  },
+  "status": "ok",
+  "timings": {
+    "wall_seconds": 32.44389641704038
+  },
+  "traceback": null
+}
