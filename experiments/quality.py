@@ -193,11 +193,14 @@ def mode_overlap(mode: np.ndarray, direction: np.ndarray) -> float:
 # --------------------------------------------------------------------------
 
 
-def _pairwise_rmsd(path: Sequence[Atoms], reference: Sequence[Atoms],
-                   heavy_only: bool = True) -> np.ndarray:
+def _pairwise_rmsd(
+    path: Sequence[Atoms], reference: Sequence[Atoms], heavy_only: bool = True
+) -> np.ndarray:
     return np.array(
-        [[permutation_rmsd(a, b, heavy_only=heavy_only) for b in reference]
-         for a in path]
+        [
+            [permutation_rmsd(a, b, heavy_only=heavy_only) for b in reference]
+            for a in path
+        ]
     )
 
 
@@ -235,8 +238,11 @@ def progress_monotonicity(path: Sequence[Atoms], reference: Sequence[Atoms]) -> 
     return {"spearman": float(rho), "backtracks": backtracks}
 
 
-def barrier_recovery(path_energies: Sequence[float], reactant_energy: float,
-                     reference_barrier_kcal: float) -> dict:
+def barrier_recovery(
+    path_energies: Sequence[float],
+    reactant_energy: float,
+    reference_barrier_kcal: float,
+) -> dict:
     """How high the drive climbed, against how high it needed to.
 
     A path that overshoots the true barrier by tens of kcal/mol is not a
@@ -284,8 +290,13 @@ class Tiers:
     @property
     def highest(self) -> int:
         for level, passed in enumerate(
-            [self.t0_ref_bond_error, self.t1_all_bond_error, self.t2_rmsd,
-             self.t3_one_imaginary, self.t4_verified]
+            [
+                self.t0_ref_bond_error,
+                self.t1_all_bond_error,
+                self.t2_rmsd,
+                self.t3_one_imaginary,
+                self.t4_verified,
+            ]
         ):
             if not passed:
                 return level - 1
@@ -299,7 +310,9 @@ class Tiers:
         return f"T{highest}" if highest >= 0 else "none"
 
 
-def wilson_interval(successes: int, trials: int, z: float = 1.96) -> tuple[float, float]:
+def wilson_interval(
+    successes: int, trials: int, z: float = 1.96
+) -> tuple[float, float]:
     """Wilson score interval -- reported instead of point estimates.
 
     With n = 19 the normal approximation is not usable, and a bare "12/19"

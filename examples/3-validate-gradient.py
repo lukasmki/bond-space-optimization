@@ -65,7 +65,9 @@ if __name__ == "__main__":
             if abs(fd) < 1e-9 and abs(an) < 1e-9:
                 continue  # symmetry-zero component, nothing to compare
             worst = max(worst, abs(an - fd))
-            print(f"  {sym[k]}{k}    {'xyz'[x]}    {an:12.6f} {fd:12.6f} {an - fd:12.2e}")
+            print(
+                f"  {sym[k]}{k}    {'xyz'[x]}    {an:12.6f} {fd:12.6f} {an - fd:12.2e}"
+            )
 
     # Rigidly translating the molecule cannot change any bond order, so every
     # column of the gradient must sum to zero over atoms.  This is the check
@@ -76,6 +78,9 @@ if __name__ == "__main__":
     print(f"translational invariance residual  : {drift:.2e}")
 
     ok = worst < 1e-5 and drift < 1e-8
-    print("\nPASS - analytic gradient is correct" if ok else
-          "\nFAIL - bond.py has regressed")
+    print(
+        "\nPASS - analytic gradient is correct"
+        if ok
+        else "\nFAIL - bond.py has regressed"
+    )
     raise SystemExit(0 if ok else 1)

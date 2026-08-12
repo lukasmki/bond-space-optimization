@@ -95,14 +95,16 @@ def known_reactions() -> list[dict]:
     """
     out = []
     for rxn in load_set():
-        out.append({
-            "id": rxn.id,
-            "equation": rxn.equation,
-            "reactants": spectra.species_label(rxn.reactant),
-            "products": spectra.species_label(rxn.product),
-            "spin": rxn.spin,
-            "natoms": rxn.natoms,
-        })
+        out.append(
+            {
+                "id": rxn.id,
+                "equation": rxn.equation,
+                "reactants": spectra.species_label(rxn.reactant),
+                "products": spectra.species_label(rxn.product),
+                "spin": rxn.spin,
+                "natoms": rxn.natoms,
+            }
+        )
     return out
 
 
@@ -139,8 +141,13 @@ def verify_edge(
     out["ts_targets"] = [list(b) for b in bonds]
 
     result = drive_mod.drive(
-        source, bonds, charge, spin, production,
-        steps=30 if args.smoke else DRIVE_STEPS, keep_frames=False,
+        source,
+        bonds,
+        charge,
+        spin,
+        production,
+        steps=30 if args.smoke else DRIVE_STEPS,
+        keep_frames=False,
     )
     out["ts_drive_outcome"] = result.outcome
     guess = result.atoms
@@ -168,7 +175,10 @@ def verify_edge(
         return out
 
     irc = spectra.run_irc(
-        refinement["atoms"], charge, spin, verify,
+        refinement["atoms"],
+        charge,
+        spin,
+        verify,
         steps=15 if args.smoke else 50,
     )
     endpoints = {}
@@ -236,15 +246,24 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
                 prepared = network.preorient(state, move)
                 bonds = network.target_bonds(prepared, move)
                 result = drive_mod.drive(
-                    prepared, bonds, charge, spin, production,
-                    steps=drive_steps, keep_frames=False,
+                    prepared,
+                    bonds,
+                    charge,
+                    spin,
+                    production,
+                    steps=drive_steps,
+                    keep_frames=False,
                 )
                 entry["drive_outcome"] = result.outcome
                 entry["drive_converged"] = result.converged
 
                 product, prod_converged, _ = spectra.relax(
-                    result.atoms, charge, spin, production,
-                    fmax=0.05, steps=RELAX_STEPS,
+                    result.atoms,
+                    charge,
+                    spin,
+                    production,
+                    fmax=0.05,
+                    steps=RELAX_STEPS,
                 )
                 target_label = spectra.species_label(product)
                 entry["target"] = target_label
@@ -258,7 +277,8 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
                     }
                     io.write(
                         outdir / f"{target_label.replace(' ', '')}.xyz",
-                        product, format="extxyz",
+                        product,
+                        format="extxyz",
                     )
                     queue.append((product, depth + 1))
             except Exception as exc:  # noqa: BLE001 -- recorded, never swallowed
@@ -270,12 +290,16 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
                 entry["error"] = f"{type(exc).__name__}: {exc}"
                 entry["traceback"] = traceback.format_exc()
             edges.append(entry)
-            print(f"    edge {entry['source']} -> {entry.get('target', 'FAILED')}"
-                  f"  [{entry['move']}]", flush=True)
+            print(
+                f"    edge {entry['source']} -> {entry.get('target', 'FAILED')}"
+                f"  [{entry['move']}]",
+                flush=True,
+            )
 
     # --- verification pass ------------------------------------------------
     candidates = [
-        e for e in edges
+        e
+        for e in edges
         if e.get("target") and e["target"] != e["source"] and "error" not in e
     ]
     if args.smoke:
@@ -293,8 +317,10 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
                     )
                     break
         except Exception as exc:  # noqa: BLE001
-            entry["verification"] = {"verified": False,
-                                     "failure": f"{type(exc).__name__}: {exc}"}
+            entry["verification"] = {
+                "verified": False,
+                "failure": f"{type(exc).__name__}: {exc}",
+            }
         if entry.get("verification", {}).get("verified"):
             verified += 1
 
@@ -305,25 +331,29 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
 
     discovered_pairs = {
         frozenset((e["source"], e["target"]))
-        for e in edges if e.get("target") and e["target"] != e["source"]
+        for e in edges
+        if e.get("target") and e["target"] != e["source"]
     }
     verified_pairs = {
         frozenset((e["source"], e["target"]))
-        for e in edges if e.get("verification", {}).get("verified")
+        for e in edges
+        if e.get("verification", {}).get("verified")
     }
 
     recall_rows = []
     for known in known_reactions():
         ok, reason = reachable(known, spin, sector_atoms)
         pair = frozenset((known["reactants"], known["products"]))
-        recall_rows.append({
-            "id": known["id"],
-            "equation": known["equation"],
-            "in_search_space": ok,
-            "excluded_because": reason,
-            "discovered": pair in discovered_pairs,
-            "verified": pair in verified_pairs,
-        })
+        recall_rows.append(
+            {
+                "id": known["id"],
+                "equation": known["equation"],
+                "in_search_space": ok,
+                "excluded_because": reason,
+                "discovered": pair in discovered_pairs,
+                "verified": pair in verified_pairs,
+            }
+        )
     in_space = [r for r in recall_rows if r["in_search_space"]]
 
     metrics = {
@@ -343,14 +373,19 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
         "nodes": sorted(nodes),
         "edges": edges,
         "recall_table": recall_rows,
-        "budget": {"max_states": max_states, "max_depth": max_depth,
-                   "drive_steps": drive_steps},
+        "budget": {
+            "max_states": max_states,
+            "max_depth": max_depth,
+            "drive_steps": drive_steps,
+        },
         # A hand-set chemical prior, and therefore part of the information
         # ledger: the enumerator will never propose a bond that exceeds it.
         "max_degree_prior": dict(network.MAX_DEGREE),
         "bond_thresh": network.BOND_THRESH,
     }
-    (outdir / "network.json").write_text(json.dumps(common.canonical(metrics), indent=2))
+    (outdir / "network.json").write_text(
+        json.dumps(common.canonical(metrics), indent=2)
+    )
     rec.metrics = metrics
     print(
         f"       {sector}: {len(nodes)} species, {len(candidates)} edges, "
@@ -369,7 +404,10 @@ def main() -> None:
     if args.smoke:
         jobs = common.pick_smoke_jobs(jobs, args)
     common.main_loop(
-        EXPERIMENT, jobs, args, production,
+        EXPERIMENT,
+        jobs,
+        args,
+        production,
         lambda spec, rec: run_one(spec, rec, production, verify, args),
     )
 

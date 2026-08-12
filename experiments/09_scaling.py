@@ -128,8 +128,12 @@ def run_one(spec: JobSpec, rec: RunRecord, args) -> None:
     basis = spec.params["basis"]
     atoms, charge, spin = build_system(name)
     level = Level(
-        f"scaling-{basis}", PRODUCTION.xc, basis,
-        PRODUCTION.conv_tol, PRODUCTION.level_shift, PRODUCTION.density_fit,
+        f"scaling-{basis}",
+        PRODUCTION.xc,
+        basis,
+        PRODUCTION.conv_tol,
+        PRODUCTION.level_shift,
+        PRODUCTION.density_fit,
     )
 
     # One constrained bond, always the first two atoms: the objective's size
@@ -201,7 +205,10 @@ def main() -> None:
             jobs, args, prefer=lambda s: s.params["system"] == "H2O-1"
         )
     common.main_loop(
-        EXPERIMENT, jobs, args, PRODUCTION,
+        EXPERIMENT,
+        jobs,
+        args,
+        PRODUCTION,
         lambda spec, rec: run_one(spec, rec, args),
     )
 

@@ -146,7 +146,8 @@ def spin_check(args) -> dict:
             "spin_error": lowest != rxn.spin,
             "gap_kcal": (
                 (valid[rxn.spin] - valid[lowest]) * 23.0605
-                if rxn.spin in valid else None
+                if rxn.spin in valid
+                else None
             ),
         }
     return out
@@ -155,16 +156,20 @@ def spin_check(args) -> dict:
 def barrierless(excluded: dict[str, str]) -> list[str]:
     """Reactions E01 could not give a saddle to at all."""
     return sorted(
-        rid for rid, reason in excluded.items()
+        rid
+        for rid, reason in excluded.items()
         if "n_imaginary=0" in reason or "did not converge" in reason
     )
 
 
 def main() -> None:
     parser = common.add_standard_args(argparse.ArgumentParser(description=__doc__))
-    parser.add_argument("--spin-check", action="store_true",
-                        help="re-evaluate located structures at spin +/- 2 "
-                             "(class 6); expensive, so opt-in")
+    parser.add_argument(
+        "--spin-check",
+        action="store_true",
+        help="re-evaluate located structures at spin +/- 2 "
+        "(class 6); expensive, so opt-in",
+    )
     args = common.parse_args(parser)
     common.setup(args)
 
@@ -179,14 +184,16 @@ def main() -> None:
                 continue
             for c in classes:
                 counts[c] += 1
-            rows.append({
-                "experiment": experiment,
-                "key": rec["key"],
-                "reaction": rec.get("metrics", {}).get("reaction"),
-                "status": rec.get("status"),
-                "classes": classes,
-                "class_names": [CLASSES[c] for c in classes],
-            })
+            rows.append(
+                {
+                    "experiment": experiment,
+                    "key": rec["key"],
+                    "reaction": rec.get("metrics", {}).get("reaction"),
+                    "status": rec.get("status"),
+                    "classes": classes,
+                    "class_names": [CLASSES[c] for c in classes],
+                }
+            )
 
     atlas = {
         "class_definitions": CLASSES,
@@ -207,8 +214,10 @@ def main() -> None:
     path.write_text(json.dumps(common.canonical(atlas), indent=2))
 
     print(f"\nfailure atlas -> {path}")
-    print(f"  {len(rows)} records in a failure class; "
-          f"{len(excluded)} reactions excluded on the reference side\n")
+    print(
+        f"  {len(rows)} records in a failure class; "
+        f"{len(excluded)} reactions excluded on the reference side\n"
+    )
     for c, name in CLASSES.items():
         print(f"  class {c}  {counts[c]:5d}  {name}")
     if excluded:

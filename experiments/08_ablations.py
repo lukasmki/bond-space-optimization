@@ -76,16 +76,33 @@ def _configure(knob, value, base_level: Level, args) -> tuple[Level, dict]:
     if knob in ("reference", "perturb"):
         return level, kwargs
     if knob == "basis":
-        level = Level(f"{base_level.name}-{value}", base_level.xc, str(value),
-                      base_level.conv_tol, base_level.level_shift,
-                      base_level.density_fit)
+        level = Level(
+            f"{base_level.name}-{value}",
+            base_level.xc,
+            str(value),
+            base_level.conv_tol,
+            base_level.level_shift,
+            base_level.density_fit,
+        )
     elif knob == "level_shift":
         shift = tuple(value) if isinstance(value, (list, tuple)) else float(value)
-        level = Level(f"{base_level.name}-ls", base_level.xc, base_level.basis,
-                      base_level.conv_tol, shift, base_level.density_fit)
+        level = Level(
+            f"{base_level.name}-ls",
+            base_level.xc,
+            base_level.basis,
+            base_level.conv_tol,
+            shift,
+            base_level.density_fit,
+        )
     elif knob == "density_fit":
-        level = Level(f"{base_level.name}-nodf", base_level.xc, base_level.basis,
-                      base_level.conv_tol, base_level.level_shift, bool(value))
+        level = Level(
+            f"{base_level.name}-nodf",
+            base_level.xc,
+            base_level.basis,
+            base_level.conv_tol,
+            base_level.level_shift,
+            bool(value),
+        )
     elif knob == "optimizer":
         optimizer, maxstep = OPTIMIZERS[str(value)]
         kwargs["optimizer"] = optimizer
@@ -134,9 +151,13 @@ def run_one(spec: JobSpec, rec: RunRecord, base_production, verify, args) -> Non
     reference = e01.load_reference(rxn.id)
     if reference is None:
         rec.status = "skipped"
-        rec.metrics = {"reaction": rxn.id, "knob": knob, "value": value,
-                       "excluded": True,
-                       "exclusion_reason": "no verified reference from E01"}
+        rec.metrics = {
+            "reaction": rxn.id,
+            "knob": knob,
+            "value": value,
+            "excluded": True,
+            "exclusion_reason": "no verified reference from E01",
+        }
         print("       skipped: no verified reference", flush=True)
         return
 
@@ -154,8 +175,9 @@ def run_one(spec: JobSpec, rec: RunRecord, base_production, verify, args) -> Non
         "value": value,
         "seed": spec.params.get("seed"),
         "level": level.as_dict(),
-        "drive_kwargs": {k: (v if not callable(v) else v.__name__)
-                         for k, v in kwargs.items()},
+        "drive_kwargs": {
+            k: (v if not callable(v) else v.__name__) for k, v in kwargs.items()
+        },
         "n_targets": len(bonds),
         "drive_outcome": result.outcome,
         "drive_converged": result.converged,
@@ -164,9 +186,8 @@ def run_one(spec: JobSpec, rec: RunRecord, base_production, verify, args) -> Non
         # max|dB| at the moment the optimiser stopped: the number that shows
         # whether a loose `thresh` is hiding error rather than removing it.
         "drive_target_error": result.max_target_error,
-        "cphf_solves": result.calculate_calls * (
-            1 if kwargs["zvector"] else 3 * rxn.natoms
-        ),
+        "cphf_solves": result.calculate_calls
+        * (1 if kwargs["zvector"] else 3 * rxn.natoms),
     }
 
     # Metrics are scored at VERIFY regardless of what the drive used, so a
@@ -182,7 +203,11 @@ def run_one(spec: JobSpec, rec: RunRecord, base_production, verify, args) -> Non
         # a measured quantity: how much force is being discarded, and does the
         # endpoint move as a result?
         free = drive.drive(
-            start, bonds, rxn.charge, rxn.spin, level,
+            start,
+            bonds,
+            rxn.charge,
+            rxn.spin,
+            level,
             **{**kwargs, "restrict_gradient": False},
         )
         metrics["restricted_vs_free_rmsd"] = quality.permutation_rmsd(
@@ -207,11 +232,16 @@ def main() -> None:
     jobs = jobs_for(EXPERIMENT)
     if args.smoke:
         jobs = common.pick_smoke_jobs(
-            jobs, args, n=2,
+            jobs,
+            args,
+            n=2,
             prefer=lambda s: e01.load_reference(s.params["reaction"]) is not None,
         )
     common.main_loop(
-        EXPERIMENT, jobs, args, production,
+        EXPERIMENT,
+        jobs,
+        args,
+        production,
         lambda spec, rec: run_one(spec, rec, production, verify, args),
     )
 

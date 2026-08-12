@@ -191,12 +191,25 @@ _HCOMBUSTION: dict[str, dict] = {
 #: From data/analysis.ipynb cell 7, copied verbatim so the taxonomy used in
 #: the figures is the same one the existing analysis used.
 CATEGORY = {
-    "rxn_01": "oxygen", "rxn_02": "hydrogen", "rxn_03": "hydrogen",
-    "rxn_04": "hydrogen", "rxn_05": "ad", "rxn_06": "ad", "rxn_07": "ad",
-    "rxn_08": "ad", "rxn_09": "ad", "rxn_10": "hydrogen", "rxn_11": "oxygen",
-    "rxn_12": "oxygen", "rxn_13": "hydrogen", "rxn_14": "hydrogen",
-    "rxn_15": "ad", "rxn_16": "sub", "rxn_17": "hydrogen",
-    "rxn_18": "hydrogen", "rxn_19": "hydrogen",
+    "rxn_01": "oxygen",
+    "rxn_02": "hydrogen",
+    "rxn_03": "hydrogen",
+    "rxn_04": "hydrogen",
+    "rxn_05": "ad",
+    "rxn_06": "ad",
+    "rxn_07": "ad",
+    "rxn_08": "ad",
+    "rxn_09": "ad",
+    "rxn_10": "hydrogen",
+    "rxn_11": "oxygen",
+    "rxn_12": "oxygen",
+    "rxn_13": "hydrogen",
+    "rxn_14": "hydrogen",
+    "rxn_15": "ad",
+    "rxn_16": "sub",
+    "rxn_17": "hydrogen",
+    "rxn_18": "hydrogen",
+    "rxn_19": "hydrogen",
 }
 
 #: **Pre-registered before any run.**  These reactions' endpoints have
@@ -307,8 +320,12 @@ def _check_consistency(reactions: Sequence[Reaction]) -> None:
 #: span the four categories with two reactions each.  Pre-registered so that
 #: the subset cannot be picked after seeing which reactions do well.
 ABLATION_SUBSET = (
-    "rxn_03", "rxn_10",   # hydrogen transfer
-    "rxn_11", "rxn_12",   # oxygen transfer
-    "rxn_04", "rxn_16",   # substitution-like
-    "rxn_09", "rxn_15",   # association/dissociation (both spin-nonconserving)
+    "rxn_03",
+    "rxn_10",  # hydrogen transfer
+    "rxn_11",
+    "rxn_12",  # oxygen transfer
+    "rxn_04",
+    "rxn_16",  # substitution-like
+    "rxn_09",
+    "rxn_15",  # association/dissociation (both spin-nonconserving)
 )

@@ -23,28 +23,46 @@ TAU_VALUES = (0.30, 0.40, 0.45, 0.50, 0.55, 0.60, 0.70)
 #: so every sweep has a same-code baseline rather than a cross-script one.
 ABLATIONS: tuple[tuple[str, object], ...] = (
     ("reference", None),
-    ("ovlp_thresh", 0.0), ("ovlp_thresh", 0.25), ("ovlp_thresh", 1.0),
+    ("ovlp_thresh", 0.0),
+    ("ovlp_thresh", 0.25),
+    ("ovlp_thresh", 1.0),
     ("ovlp_thresh", 2.0),
-    ("thresh", 0.2), ("thresh", 0.1), ("thresh", 0.01), ("thresh", 1e-6),
-    ("basis", "sto-3g"), ("basis", "6-31g*"), ("basis", "def2-svp"),
+    ("thresh", 0.2),
+    ("thresh", 0.1),
+    ("thresh", 0.01),
+    ("thresh", 1e-6),
+    ("basis", "sto-3g"),
+    ("basis", "6-31g*"),
+    ("basis", "def2-svp"),
     ("basis", "cc-pvtz"),
-    ("level_shift", 0.0), ("level_shift", 0.2), ("level_shift", (0.5, 0.4)),
-    ("optimizer", "FIRE2-0.02"), ("optimizer", "FIRE2-0.1"),
-    ("optimizer", "FIRE2-0.2"), ("optimizer", "BFGS"), ("optimizer", "LBFGS"),
+    ("level_shift", 0.0),
+    ("level_shift", 0.2),
+    ("level_shift", (0.5, 0.4)),
+    ("optimizer", "FIRE2-0.02"),
+    ("optimizer", "FIRE2-0.1"),
+    ("optimizer", "FIRE2-0.2"),
+    ("optimizer", "BFGS"),
+    ("optimizer", "LBFGS"),
     ("fresh_guess", True),
     ("restrict_gradient", True),
     ("zvector", False),
     ("density_fit", False),
     ("full_connectivity", True),
-    ("steps", 40), ("steps", 80), ("steps", 150),
+    ("steps", 40),
+    ("steps", 80),
+    ("steps", 150),
     # The knob that turned out to matter most.  data/1-run.py stops at
     # fmax = 0.1 eV/Ang, but the constraint force on a *relaxed* reactant is
     # already below that -- measured 0.016 on rxn_03 with max|dB| = 0.3 --
     # so FIRE2 exits at step zero and the endpoint is the start.  If the
     # success rate moves with this row, E02's headline is an artifact of a
     # convergence threshold and has to be reported as one.
-    ("fmax", 0.05), ("fmax", 0.02), ("fmax", 0.01),
-    ("perturb", 0.05), ("perturb", 0.10), ("perturb", 0.20),
+    ("fmax", 0.05),
+    ("fmax", 0.02),
+    ("fmax", 0.01),
+    ("perturb", 0.05),
+    ("perturb", 0.10),
+    ("perturb", 0.20),
 )
 
 #: Seeds for the perturbation ablation; ten displacements per sigma.
@@ -54,8 +72,17 @@ PERTURB_SEEDS = tuple(range(10))
 #: element ratio; the alkanes vary the basis-function count per atom.  No
 #: accuracy claim attaches to any of these -- this is a cost curve only.
 SCALING_SYSTEMS = (
-    "H2O-1", "H2O-2", "H2O-3", "H2O-4", "H2O-5", "H2O-6",
-    "CH4", "C2H6", "C3H8", "C6H6", "C4H10",
+    "H2O-1",
+    "H2O-2",
+    "H2O-3",
+    "H2O-4",
+    "H2O-5",
+    "H2O-6",
+    "CH4",
+    "C2H6",
+    "C3H8",
+    "C6H6",
+    "C4H10",
 )
 SCALING_BASES = ("cc-pvdz", "cc-pvtz")
 SCALING_MODES = ("zvector", "direct", "restrict")
@@ -149,8 +176,11 @@ def e06_path_vs_irc() -> list[JobSpec]:
 
 def e07_network() -> list[JobSpec]:
     return [
-        JobSpec("07_network_discovery", name,
-                {"sector": name, "seed": formula, "charge": charge, "spin": spin})
+        JobSpec(
+            "07_network_discovery",
+            name,
+            {"sector": name, "seed": formula, "charge": charge, "spin": spin},
+        )
         for name, formula, charge, spin in NETWORK_SEEDS
     ]
 
@@ -165,8 +195,12 @@ def e08_ablations() -> list[JobSpec]:
                         JobSpec(
                             "08_ablations",
                             f"{rid}-perturb-{value:.2f}-{seed}",
-                            {"reaction": rid, "knob": knob, "value": value,
-                             "seed": seed},
+                            {
+                                "reaction": rid,
+                                "knob": knob,
+                                "value": value,
+                                "seed": seed,
+                            },
                         )
                     )
             else:

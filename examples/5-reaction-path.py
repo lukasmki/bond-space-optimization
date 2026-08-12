@@ -69,8 +69,10 @@ def compare(atoms: Atoms, reference: Atoms, label: str) -> float:
     sym = atoms.get_chemical_symbols()
     for (i, j), e in zip(zip(*iu), err):
         if Bref[i, j] > 0.1 or B[i, j] > 0.1:
-            print(f"      {sym[i]}{i}-{sym[j]}{j}   got {B[i, j]:.3f}   "
-                  f"reference {Bref[i, j]:.3f}   err {e:.3f}")
+            print(
+                f"      {sym[i]}{i}-{sym[j]}{j}   got {B[i, j]:.3f}   "
+                f"reference {Bref[i, j]:.3f}   err {e:.3f}"
+            )
     return float(err.max())
 
 
@@ -80,8 +82,11 @@ if __name__ == "__main__":
 
     print("reference connectivity:")
     for name, frame in (("R ", RS), ("TS", TS), ("P ", PS)):
-        pairs = [(int(a), int(b), float(c))
-                 for a, b, c in frame.info["connectivity"] if c > 0.1]
+        pairs = [
+            (int(a), int(b), float(c))
+            for a, b, c in frame.info["connectivity"]
+            if c > 0.1
+        ]
         print(f"  {name}: " + "  ".join(f"{i}-{j}={v:.2f}" for i, j, v in pairs))
 
     # Reactant -> transition state: ask for two half bonds.
@@ -95,8 +100,9 @@ if __name__ == "__main__":
     io.write(OUT / "5-reaction-path.xyz", ts_traj + ps_traj, format="extxyz")
 
     print(f"\nmax bond-order error   R->TS: {ts_err:.3f}   R->P: {ps_err:.3f}")
-    print(f"wrote {len(ts_traj) + len(ps_traj)} frames to "
-          f"{OUT / '5-reaction-path.xyz'}")
+    print(
+        f"wrote {len(ts_traj) + len(ps_traj)} frames to {OUT / '5-reaction-path.xyz'}"
+    )
     # data/analysis.ipynb counts a run as successful below 0.5.
     ok = ts_err < 0.5 and ps_err < 0.5
     print("both endpoints reached" if ok else "at least one endpoint missed")

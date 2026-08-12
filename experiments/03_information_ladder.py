@@ -73,7 +73,11 @@ def _run_l0_l1(spec, rec, rxn, reference, rung, production, verify, args) -> Non
         "drive_target_error": result.max_target_error,
     }
     verdict = drive.verify_ts(
-        result.atoms, rxn, verify, reference, bonds=bonds,
+        result.atoms,
+        rxn,
+        verify,
+        reference,
+        bonds=bonds,
         refine_steps=30 if args.smoke else 100,
         irc_steps=15 if args.smoke else 60,
     )
@@ -108,25 +112,36 @@ def _run_l2(spec, rec, rxn, reference, production, verify, args) -> None:
         }
         try:
             result = drive.drive(
-                start, bonds, rxn.charge, rxn.spin, production,
-                steps=steps, keep_frames=False
+                start,
+                bonds,
+                rxn.charge,
+                rxn.spin,
+                production,
+                steps=steps,
+                keep_frames=False,
             )
             entry["drive_outcome"] = result.outcome
             verdict = drive.verify_ts(
-                result.atoms, rxn, verify, reference, bonds=bonds,
+                result.atoms,
+                rxn,
+                verify,
+                reference,
+                bonds=bonds,
                 refine_steps=30 if args.smoke else 60,
                 irc_steps=10 if args.smoke else 40,
                 full=True,
             )
-            entry.update({
-                "rmsd_heavy": verdict.metrics["rmsd_heavy"],
-                "n_imaginary": verdict.metrics["n_imaginary"],
-                "energy_ev": verdict.metrics["energy_ev"],
-                "barrier_kcal": verdict.metrics["barrier_kcal"],
-                "irc_connects": verdict.metrics.get("irc_connects", False),
-                "irc_observed": verdict.metrics.get("irc_observed"),
-                "highest_tier": verdict.metrics["highest_tier"],
-            })
+            entry.update(
+                {
+                    "rmsd_heavy": verdict.metrics["rmsd_heavy"],
+                    "n_imaginary": verdict.metrics["n_imaginary"],
+                    "energy_ev": verdict.metrics["energy_ev"],
+                    "barrier_kcal": verdict.metrics["barrier_kcal"],
+                    "irc_connects": verdict.metrics.get("irc_connects", False),
+                    "irc_observed": verdict.metrics.get("irc_observed"),
+                    "highest_tier": verdict.metrics["highest_tier"],
+                }
+            )
         except Exception as exc:  # noqa: BLE001 -- one move failing is data
             entry["error"] = f"{type(exc).__name__}: {exc}"
         found.append(entry)
@@ -138,9 +153,7 @@ def _run_l2(spec, rec, rxn, reference, production, verify, args) -> None:
     # barriers first, so the rank of the true TS in that ordering is what says
     # whether the enumeration is usable in practice.
     ranked = sorted(saddles, key=lambda e: e.get("barrier_kcal", float("inf")))
-    rank = next(
-        (i + 1 for i, e in enumerate(ranked) if e.get("irc_connects")), None
-    )
+    rank = next((i + 1 for i, e in enumerate(ranked) if e.get("irc_connects")), None)
 
     rec.metrics = {
         "reaction": rxn.id,
@@ -170,8 +183,12 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
     reference = e01.load_reference(rxn.id)
     if reference is None:
         rec.status = "skipped"
-        rec.metrics = {"reaction": rxn.id, "rung": rung, "excluded": True,
-                       "exclusion_reason": "no verified reference from E01"}
+        rec.metrics = {
+            "reaction": rxn.id,
+            "rung": rung,
+            "excluded": True,
+            "exclusion_reason": "no verified reference from E01",
+        }
         print("       skipped: no verified reference", flush=True)
         return
     if rung == "L2":
@@ -188,11 +205,16 @@ def main() -> None:
     jobs = jobs_for(EXPERIMENT)
     if args.smoke:
         jobs = common.pick_smoke_jobs(
-            jobs, args, n=3,
+            jobs,
+            args,
+            n=3,
             prefer=lambda s: e01.load_reference(s.params["reaction"]) is not None,
         )
     common.main_loop(
-        EXPERIMENT, jobs, args, production,
+        EXPERIMENT,
+        jobs,
+        args,
+        production,
         lambda spec, rec: run_one(spec, rec, production, verify, args),
     )
 

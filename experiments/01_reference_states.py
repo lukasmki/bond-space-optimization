@@ -39,6 +39,10 @@ from systems import by_id
 
 EXPERIMENT = "01_reference_states"
 
+# An IRC branch that moves less than this has not left the transition state,
+# so its endpoint label describes the saddle and says nothing about products.
+IRC_MIN_DISPLACEMENT = 0.05  # Angstrom, max component
+
 
 def reference_path(reaction: str, suffix: str = ".xyz"):
     """Where a reference artifact goes, with the directory guaranteed to exist.
@@ -80,8 +84,13 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
     relaxed = {}
     for side, frame in (("r", rxn.reactant), ("p", rxn.product)):
         atoms, converged, n = spectra.relax(
-            frame, rxn.charge, rxn.spin, level,
-            fmax=0.01, steps=steps, internal=True,
+            frame,
+            rxn.charge,
+            rxn.spin,
+            level,
+            fmax=0.01,
+            steps=steps,
+            internal=True,
         )
         point = spectra.single_point(atoms, rxn.charge, rxn.spin, level)
         relaxed[side] = atoms
@@ -99,9 +108,7 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
     metrics["dataset_ts_max_force"] = dataset_point["max_force"]
     metrics["dataset_ts_energy_ev"] = dataset_point["energy"]
     try:
-        dataset_spectrum = spectra.hessian_spectrum(
-            rxn.ts, rxn.charge, rxn.spin, level
-        )
+        dataset_spectrum = spectra.hessian_spectrum(rxn.ts, rxn.charge, rxn.spin, level)
         metrics["dataset_ts_n_imaginary"] = dataset_spectrum.n_imaginary
         metrics["dataset_ts_omega"] = dataset_spectrum.omega_imaginary
     except RuntimeError as exc:
@@ -145,9 +152,7 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
     # --- does it connect the reaction we think it does? -----------------
     verified = False
     if refinement["converged"] and ts_spectrum.n_imaginary == 1:
-        irc = spectra.run_irc(
-            ts_atoms, rxn.charge, rxn.spin, level, steps=irc_steps
-        )
+        irc = spectra.run_irc(ts_atoms, rxn.charge, rxn.spin, level, steps=irc_steps)
         connection = spectra.irc_connects(
             irc, relaxed["r"], relaxed["p"], rxn.charge, rxn.spin, level
         )
@@ -156,11 +161,19 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
         metrics["irc_connects"] = connection["connects"]
         metrics["irc_forward_converged"] = irc["forward"]["converged"]
         metrics["irc_reverse_converged"] = irc["reverse"]["converged"]
+        metrics["irc_forward_displacement"] = irc["forward"]["displacement"]
+        metrics["irc_reverse_displacement"] = irc["reverse"]["displacement"]
+        metrics["irc_left_saddle"] = all(
+            irc[d]["displacement"] > IRC_MIN_DISPLACEMENT
+            for d in ("forward", "reverse")
+        )
         verified = bool(connection["connects"])
 
-        path = list(reversed(irc["reverse"]["frames"])) + [ts_atoms] + irc[
-            "forward"
-        ]["frames"]
+        path = (
+            list(reversed(irc["reverse"]["frames"]))
+            + [ts_atoms]
+            + irc["forward"]["frames"]
+        )
         io.write(
             reference_path(rxn.id, "-irc.xyz"),
             path,
@@ -174,10 +187,17 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
         # Named explicitly so downstream scripts exclude rather than score it,
         # and so the exclusion appears in the paper with a reason attached.
         metrics["exclusion_reason"] = (
-            "sella did not converge" if not refinement["converged"]
-            else f"n_imaginary={ts_spectrum.n_imaginary}"
-            if ts_spectrum.n_imaginary != 1
-            else "IRC did not connect the intended endpoints"
+            "sella did not converge"
+            if not refinement["converged"]
+            else (
+                f"n_imaginary={ts_spectrum.n_imaginary}"
+                if ts_spectrum.n_imaginary != 1
+                else (
+                    "IRC did not leave the saddle"
+                    if not metrics.get("irc_left_saddle", True)
+                    else "IRC did not connect the intended endpoints"
+                )
+            )
         )
 
     # --- persist the reference geometries -------------------------------
@@ -189,9 +209,11 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
     io.write(path, frames, format="extxyz")
     np.save(
         reference_path(rxn.id, "-mode.npy"),
-        ts_spectrum.imaginary_mode
-        if ts_spectrum.imaginary_mode is not None
-        else np.zeros((rxn.natoms, 3)),
+        (
+            ts_spectrum.imaginary_mode
+            if ts_spectrum.imaginary_mode is not None
+            else np.zeros((rxn.natoms, 3))
+        ),
     )
 
     rec.metrics = metrics
@@ -262,7 +284,10 @@ def main() -> None:
     if args.smoke:
         jobs = common.pick_smoke_jobs(jobs, args)
     common.main_loop(
-        EXPERIMENT, jobs, args, level,
+        EXPERIMENT,
+        jobs,
+        args,
+        level,
         lambda spec, rec: run_one(spec, rec, level, args),
     )
 

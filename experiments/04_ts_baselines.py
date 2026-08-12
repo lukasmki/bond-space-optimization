@@ -63,9 +63,9 @@ def _make_guess(method: str, rxn, reference, production, args):
         direction = targets_mod.bond_direction(
             reference["r_atoms"], targets_mod.l1_targets(rxn, "ts")
         )
-        return [baselines.dimer_guess(
-            rxn, production, direction=direction, steps=steps
-        )]
+        return [
+            baselines.dimer_guess(rxn, production, direction=direction, steps=steps)
+        ]
     if method == "B1r":
         seeds = RANDOM_SEEDS[:2] if args.smoke else RANDOM_SEEDS
         return [
@@ -73,28 +73,41 @@ def _make_guess(method: str, rxn, reference, production, args):
             for seed in seeds
         ]
     if method == "B2":
-        return [baselines.sella_from_reactant(
-            rxn, production, steps=30 if args.smoke else 100
-        )]
+        return [
+            baselines.sella_from_reactant(
+                rxn, production, steps=30 if args.smoke else 100
+            )
+        ]
     if method == "B3":
-        return [baselines.cineb_guess(
-            rxn, production,
-            n_images=5 if args.smoke else 9,
-            steps=10 if args.smoke else 50,
-        )]
+        return [
+            baselines.cineb_guess(
+                rxn,
+                production,
+                n_images=5 if args.smoke else 9,
+                steps=10 if args.smoke else 50,
+            )
+        ]
     if method == "B4":
         bonds = targets_mod.l1_targets(rxn, "ts")
         result = drive.drive(
-            reference["r_atoms"], bonds, rxn.charge, rxn.spin, production,
+            reference["r_atoms"],
+            bonds,
+            rxn.charge,
+            rxn.spin,
+            production,
             steps=30 if args.smoke else drive.DEFAULT_STEPS,
             keep_frames=False,
         )
-        return [baselines.Guess(
-            result.atoms, "bondspace-L1", "L1",
-            pes_calls=result.calculate_calls,
-            converged=result.converged,
-            note=result.outcome,
-        )]
+        return [
+            baselines.Guess(
+                result.atoms,
+                "bondspace-L1",
+                "L1",
+                pes_calls=result.calculate_calls,
+                converged=result.converged,
+                note=result.outcome,
+            )
+        ]
     raise ValueError(f"unknown baseline {method!r}")
 
 
@@ -104,8 +117,12 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
     reference = e01.load_reference(rxn.id)
     if reference is None:
         rec.status = "skipped"
-        rec.metrics = {"reaction": rxn.id, "method": method, "excluded": True,
-                       "exclusion_reason": "no verified reference from E01"}
+        rec.metrics = {
+            "reaction": rxn.id,
+            "method": method,
+            "excluded": True,
+            "exclusion_reason": "no verified reference from E01",
+        }
         print("       skipped: no verified reference", flush=True)
         return
 
@@ -126,7 +143,11 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
         }
         try:
             verdict = drive.verify_ts(
-                guess.atoms, rxn, verify, reference, bonds=bonds,
+                guess.atoms,
+                rxn,
+                verify,
+                reference,
+                bonds=bonds,
                 refine_steps=30 if args.smoke else 100,
                 irc_steps=15 if args.smoke else 60,
             )
@@ -163,15 +184,19 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
         "spin_changes": rxn.spin_changes,
         "runs": runs,
         "n_runs": len(runs),
-        **({} if best is None else {
-            "highest_tier": best["highest_tier"],
-            "tiers": best["tiers"],
-            "rmsd_heavy": best["rmsd_heavy"],
-            "barrier_error_kcal": best["barrier_error_kcal"],
-            "n_imaginary": best["n_imaginary"],
-            "total_pes_calls": best["total_pes_calls"],
-            "irc_connects": best.get("irc_connects", False),
-        }),
+        **(
+            {}
+            if best is None
+            else {
+                "highest_tier": best["highest_tier"],
+                "tiers": best["tiers"],
+                "rmsd_heavy": best["rmsd_heavy"],
+                "barrier_error_kcal": best["barrier_error_kcal"],
+                "n_imaginary": best["n_imaginary"],
+                "total_pes_calls": best["total_pes_calls"],
+                "irc_connects": best.get("irc_connects", False),
+            }
+        ),
     }
     if best is not None:
         print(
@@ -195,11 +220,16 @@ def main() -> None:
     jobs = jobs_for(EXPERIMENT)
     if args.smoke:
         jobs = common.pick_smoke_jobs(
-            jobs, args, n=2,
+            jobs,
+            args,
+            n=2,
             prefer=lambda s: e01.load_reference(s.params["reaction"]) is not None,
         )
     common.main_loop(
-        EXPERIMENT, jobs, args, production,
+        EXPERIMENT,
+        jobs,
+        args,
+        production,
         lambda spec, rec: run_one(spec, rec, production, verify, args),
     )
 

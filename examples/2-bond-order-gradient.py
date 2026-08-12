@@ -59,8 +59,10 @@ if __name__ == "__main__":
     # limited by the DFT grid, density fitting and conv_tol=1e-6 -- not by the
     # gradient itself.  3-validate-gradient.py repeats this with tight UHF and
     # gets ~1e-15.
-    print(f"\nsum over atoms (0 by translational invariance): "
-          f"{np.abs(BG.sum(axis=0)).max():.2e}")
+    print(
+        f"\nsum over atoms (0 by translational invariance): "
+        f"{np.abs(BG.sum(axis=0)).max():.2e}"
+    )
 
     # Write each pair's gradient as a set of pseudo-forces, viewable in any
     # trajectory viewer that draws force vectors.

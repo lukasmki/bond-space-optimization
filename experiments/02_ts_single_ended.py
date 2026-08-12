@@ -93,7 +93,10 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
     }
 
     verdict = drive.verify_ts(
-        result.atoms, rxn, verify, reference,
+        result.atoms,
+        rxn,
+        verify,
+        reference,
         bonds=bonds,
         refine_steps=30 if args.smoke else 100,
         irc_steps=15 if args.smoke else 60,
@@ -135,10 +138,15 @@ def main() -> None:
     jobs = jobs_for(EXPERIMENT)
     if args.smoke:
         jobs = common.pick_smoke_jobs(
-            jobs, args, prefer=lambda s: e01.load_reference(s.params["reaction"]) is not None
+            jobs,
+            args,
+            prefer=lambda s: e01.load_reference(s.params["reaction"]) is not None,
         )
     common.main_loop(
-        EXPERIMENT, jobs, args, production,
+        EXPERIMENT,
+        jobs,
+        args,
+        production,
         lambda spec, rec: run_one(spec, rec, production, verify, args),
     )
 

@@ -56,8 +56,15 @@ def _wilson_bars(ax, xs, rates, lows, highs, color, label, marker):
     lower = np.clip(np.array(rates) - np.array(lows), 0, None)
     upper = np.clip(np.array(highs) - np.array(rates), 0, None)
     ax.errorbar(
-        xs, rates, yerr=[lower, upper], color=color, marker=marker,
-        capsize=3, elinewidth=1.2, label=label, linestyle="-",
+        xs,
+        rates,
+        yerr=[lower, upper],
+        color=color,
+        marker=marker,
+        capsize=3,
+        elinewidth=1.2,
+        label=label,
+        linestyle="-",
     )
 
 
@@ -85,15 +92,23 @@ def fig1() -> None:
     ax = axes[0]
     bars = ax.bar(tiers, counts, color=style.SEQUENTIAL, width=0.7)
     for bar, count in zip(bars, counts):
-        ax.text(bar.get_x() + bar.get_width() / 2, count + 0.15, str(count),
-                ha="center", va="bottom", fontsize=8, color=style.INK)
+        ax.text(
+            bar.get_x() + bar.get_width() / 2,
+            count + 0.15,
+            str(count),
+            ha="center",
+            va="bottom",
+            fontsize=8,
+            color=style.INK,
+        )
     ax.set_ylabel("reactions passing")
     ax.set_ylim(0, len(rows) + 1.5)
     ax.set_title("(a) attrition down the ladder", loc="left")
     ax.set_xlabel(
         "T0 bond error (ref pairs) · T1 all pairs · T2 RMSD\n"
         "T3 one imaginary mode · T4 IRC connects R and P",
-        fontsize=7, color=style.INK_MUTED,
+        fontsize=7,
+        color=style.INK_MUTED,
     )
 
     # (b) is it better than interpolating?  The diagonal is the whole test.
@@ -110,17 +125,29 @@ def fig1() -> None:
         sel = [i for i, s in enumerate(saddle) if s == is_saddle]
         if sel:
             ax.scatter(
-                [mid[i] for i in sel], [bs[i] for i in sel],
-                color=style.CATEGORICAL[0], marker=marker, s=34,
-                edgecolor=style.SURFACE, linewidth=0.8, label=label, zorder=3,
+                [mid[i] for i in sel],
+                [bs[i] for i in sel],
+                color=style.CATEGORICAL[0],
+                marker=marker,
+                s=34,
+                edgecolor=style.SURFACE,
+                linewidth=0.8,
+                label=label,
+                zorder=3,
             )
     ax.set_xlabel("midpoint guess, heavy-atom RMSD to TS (Å)")
     ax.set_ylabel("bond space (Å)")
     ax.set_title("(b) versus the null baseline", loc="left")
-    ax.text(limit * 0.55, limit * 0.9, "bond space worse",
-            fontsize=7, color=style.INK_MUTED)
-    ax.text(limit * 0.5, limit * 0.12, "bond space better",
-            fontsize=7, color=style.INK_MUTED)
+    ax.text(
+        limit * 0.55, limit * 0.9, "bond space worse", fontsize=7, color=style.INK_MUTED
+    )
+    ax.text(
+        limit * 0.5,
+        limit * 0.12,
+        "bond space better",
+        fontsize=7,
+        color=style.INK_MUTED,
+    )
     ax.legend(loc="lower right")
 
     # (c) is the mode you got the mode you asked for?
@@ -128,15 +155,23 @@ def fig1() -> None:
     overlaps = [num(r, "mode_overlap_bonds") for r in rows]
     overlaps = [v for v in overlaps if np.isfinite(v)]
     if overlaps:
-        ax.hist(overlaps, bins=np.linspace(0, 1, 11),
-                color=style.CATEGORICAL[1], edgecolor=style.SURFACE, linewidth=1.2)
+        ax.hist(
+            overlaps,
+            bins=np.linspace(0, 1, 11),
+            color=style.CATEGORICAL[1],
+            edgecolor=style.SURFACE,
+            linewidth=1.2,
+        )
     ax.set_xlabel("|cos| (imaginary mode, requested bond direction)")
     ax.set_ylabel("reactions")
     ax.set_title("(c) the requested motion?", loc="left")
 
     fig.text(
-        0.0, -0.10, style.caption_exclusions(len(excluded), len(rows) + len(excluded)),
-        fontsize=7, color=style.INK_MUTED,
+        0.0,
+        -0.10,
+        style.caption_exclusions(len(excluded), len(rows) + len(excluded)),
+        fontsize=7,
+        color=style.INK_MUTED,
     )
     fig.tight_layout()
     style.save(fig, "fig1_tier_ladder")
@@ -150,8 +185,11 @@ def fig1() -> None:
 def fig2() -> None:
     import matplotlib.pyplot as plt
 
-    summary = [r for r in read("tier_summary")
-               if r.get("experiment") == "03_information_ladder"]
+    summary = [
+        r
+        for r in read("tier_summary")
+        if r.get("experiment") == "03_information_ladder"
+    ]
     if not summary:
         print("  fig2: no E03 results yet")
         return
@@ -168,8 +206,14 @@ def fig2() -> None:
         lows = [num(rows[t], "wilson_low") if t in rows else np.nan for t in tiers]
         highs = [num(rows[t], "wilson_high") if t in rows else np.nan for t in tiers]
         _wilson_bars(
-            ax, np.arange(len(tiers)) + (index - 1) * 0.08, rates, lows, highs,
-            style.RUNG_COLOR[rung], style.RUNG_LABEL[rung], style.MARKERS[index],
+            ax,
+            np.arange(len(tiers)) + (index - 1) * 0.08,
+            rates,
+            lows,
+            highs,
+            style.RUNG_COLOR[rung],
+            style.RUNG_LABEL[rung],
+            style.MARKERS[index],
         )
     ax.set_xticks(range(len(tiers)))
     ax.set_xticklabels(tiers)
@@ -181,16 +225,23 @@ def fig2() -> None:
     # (b) L2's screening behaviour: finding the right saddle among many is
     # only useful if it ranks near the top.
     ax = axes[1]
-    l2 = [r for r in read("03_information_ladder")
-          if r.get("rung") == "L2" and r.get("status") == "ok"]
+    l2 = [
+        r
+        for r in read("03_information_ladder")
+        if r.get("rung") == "L2" and r.get("status") == "ok"
+    ]
     if l2:
         ranks = [num(r, "true_ts_rank_by_barrier") for r in l2]
         found = [r for r in ranks if np.isfinite(r)]
         missed = len(ranks) - len(found)
         if found:
-            ax.hist(found, bins=np.arange(0.5, max(found) + 1.5),
-                    color=style.RUNG_COLOR["L2"], edgecolor=style.SURFACE,
-                    linewidth=1.2)
+            ax.hist(
+                found,
+                bins=np.arange(0.5, max(found) + 1.5),
+                color=style.RUNG_COLOR["L2"],
+                edgecolor=style.SURFACE,
+                linewidth=1.2,
+            )
         ax.set_xlabel("rank of the true TS among discovered saddles (by barrier)")
         ax.set_ylabel("reactions")
         ax.set_title(f"(b) L2 screening — {missed} not found at all", loc="left")
@@ -224,15 +275,23 @@ def fig3() -> None:
             cost = 1.0
         low, high = _wilson(sum(flag(m, "tier_T4") for m in members), len(members))
         ax.errorbar(
-            cost, rate, yerr=[[rate - low], [high - rate]],
+            cost,
+            rate,
+            yerr=[[rate - low], [high - rate]],
             color=style.RUNG_COLOR.get(rung, style.INK_MUTED),
             marker=style.MARKERS[index % len(style.MARKERS)],
-            markersize=8, capsize=3, elinewidth=1.0, linestyle="none",
+            markersize=8,
+            capsize=3,
+            elinewidth=1.0,
+            linestyle="none",
         )
         ax.annotate(
             f"{method}  {members[0].get('label', '')}",
-            (cost, rate), textcoords="offset points", xytext=(8, 4),
-            fontsize=7.5, color=style.INK,
+            (cost, rate),
+            textcoords="offset points",
+            xytext=(8, 4),
+            fontsize=7.5,
+            color=style.INK,
         )
 
     ax.set_xscale("log")
@@ -242,8 +301,14 @@ def fig3() -> None:
     ax.set_title("Accuracy against cost, coloured by information used", loc="left")
 
     handles = [
-        plt.Line2D([], [], color=style.RUNG_COLOR[r], marker="o", linestyle="none",
-                   label=style.RUNG_LABEL[r])
+        plt.Line2D(
+            [],
+            [],
+            color=style.RUNG_COLOR[r],
+            marker="o",
+            linestyle="none",
+            label=style.RUNG_LABEL[r],
+        )
         for r in ("L0", "L1", "L2")
     ]
     ax.legend(handles=handles, loc="lower right")
@@ -278,8 +343,9 @@ def fig4() -> None:
     n = len(by_reaction)
     cols = min(4, n)
     rows_n = int(np.ceil(n / cols))
-    fig, axes = plt.subplots(rows_n, cols, figsize=(2.6 * cols, 2.4 * rows_n),
-                             squeeze=False)
+    fig, axes = plt.subplots(
+        rows_n, cols, figsize=(2.6 * cols, 2.4 * rows_n), squeeze=False
+    )
 
     for index, (reaction, members) in enumerate(sorted(by_reaction.items())):
         ax = axes[index // cols][index % cols]
@@ -304,8 +370,12 @@ def fig4() -> None:
         axes[index // cols][index % cols].axis("off")
 
     handles = [
-        plt.Line2D([], [], color=style.INK_MUTED, ls=":", label="τ = 0.5 (the heuristic)"),
-        plt.Line2D([], [], color=style.CATEGORICAL[2], label="reference TS Mayer order"),
+        plt.Line2D(
+            [], [], color=style.INK_MUTED, ls=":", label="τ = 0.5 (the heuristic)"
+        ),
+        plt.Line2D(
+            [], [], color=style.CATEGORICAL[2], label="reference TS Mayer order"
+        ),
     ]
     fig.legend(handles=handles, loc="lower center", ncol=2, bbox_to_anchor=(0.5, -0.04))
     fig.tight_layout()
@@ -359,8 +429,13 @@ def fig5() -> None:
         if not values:
             continue
         ax.scatter(
-            [method] * len(values), values, color=colors[method],
-            s=32, edgecolor=style.SURFACE, linewidth=0.8, label=method,
+            [method] * len(values),
+            values,
+            color=colors[method],
+            s=32,
+            edgecolor=style.SURFACE,
+            linewidth=0.8,
+            label=method,
         )
     ax.axhline(0, color=style.INK_MUTED, lw=0.8, ls="--")
     ax.set_ylabel("peak energy − reference barrier (kcal/mol)")
@@ -378,9 +453,11 @@ def fig5() -> None:
 def fig6() -> None:
     import matplotlib.pyplot as plt
 
-    sectors = sorted((RESULTS / "network").glob("*/network.json")) if (
-        RESULTS / "network"
-    ).exists() else []
+    sectors = (
+        sorted((RESULTS / "network").glob("*/network.json"))
+        if (RESULTS / "network").exists()
+        else []
+    )
     if not sectors:
         print("  fig6: no E07 results yet")
         return
@@ -400,7 +477,8 @@ def fig6() -> None:
         graph = nx.Graph()
         known_pairs = {
             frozenset((r["equation"].split(" -> ")[0], r["equation"].split(" -> ")[1]))
-            for r in data.get("recall_table", []) if r.get("discovered")
+            for r in data.get("recall_table", [])
+            if r.get("discovered")
         }
         for node in data.get("nodes", []):
             graph.add_node(node)
@@ -413,30 +491,53 @@ def fig6() -> None:
             verified = edge.get("verification", {}).get("verified")
             known = frozenset((edge["source"], target)) in known_pairs
             edge_colors.append(
-                style.STATUS["good"] if verified and known
-                else style.STATUS["warning"] if verified
+                style.STATUS["good"]
+                if verified and known
+                else style.STATUS["warning"]
+                if verified
                 else style.STATUS["excluded"]
             )
         pos = nx.spring_layout(graph, seed=0)
         nx.draw_networkx_edges(graph, pos, ax=ax, edge_color=edge_colors, width=1.8)
-        nx.draw_networkx_nodes(graph, pos, ax=ax, node_color=style.CATEGORICAL[0],
-                               node_size=180, edgecolors=style.SURFACE)
-        nx.draw_networkx_labels(graph, pos, ax=ax, font_size=6.5,
-                                font_color=style.INK)
+        nx.draw_networkx_nodes(
+            graph,
+            pos,
+            ax=ax,
+            node_color=style.CATEGORICAL[0],
+            node_size=180,
+            edgecolors=style.SURFACE,
+        )
+        nx.draw_networkx_labels(graph, pos, ax=ax, font_size=6.5, font_color=style.INK)
         ax.set_title(
             f"{data['sector']}  ·  precision {data['precision']:.2f}  ·  "
             f"recall {data['recall_verified']}/{data['recall_denominator']}",
-            loc="left", fontsize=8,
+            loc="left",
+            fontsize=8,
         )
         ax.axis("off")
 
     handles = [
-        plt.Line2D([], [], color=style.STATUS["good"], lw=2,
-                   label="verified and in the benchmark"),
-        plt.Line2D([], [], color=style.STATUS["warning"], lw=2,
-                   label="verified, not in the benchmark"),
-        plt.Line2D([], [], color=style.STATUS["excluded"], lw=2,
-                   label="discovered but unverified"),
+        plt.Line2D(
+            [],
+            [],
+            color=style.STATUS["good"],
+            lw=2,
+            label="verified and in the benchmark",
+        ),
+        plt.Line2D(
+            [],
+            [],
+            color=style.STATUS["warning"],
+            lw=2,
+            label="verified, not in the benchmark",
+        ),
+        plt.Line2D(
+            [],
+            [],
+            color=style.STATUS["excluded"],
+            lw=2,
+            label="discovered but unverified",
+        ),
     ]
     fig.legend(handles=handles, loc="lower center", ncol=3, bbox_to_anchor=(0.5, -0.02))
     fig.tight_layout()
@@ -457,13 +558,16 @@ def fig7() -> None:
         return
 
     fig, axes = plt.subplots(1, 2, figsize=(8.5, 3.4))
-    modes = [("zvector_seconds_median", "Z-vector (adjoint)"),
-             ("direct_seconds_median", "direct"),
-             ("restrict_seconds_median", "restrict_gradient")]
+    modes = [
+        ("zvector_seconds_median", "Z-vector (adjoint)"),
+        ("direct_seconds_median", "direct"),
+        ("restrict_seconds_median", "restrict_gradient"),
+    ]
 
     for basis, axis in zip(sorted({r["basis"] for r in rows}), axes):
-        subset = sorted((r for r in rows if r["basis"] == basis),
-                        key=lambda r: num(r, "natoms"))
+        subset = sorted(
+            (r for r in rows if r["basis"] == basis), key=lambda r: num(r, "natoms")
+        )
         n = [num(r, "natoms") for r in subset]
         for index, (column, label) in enumerate(modes):
             seconds = [num(r, column) for r in subset]
@@ -471,19 +575,25 @@ def fig7() -> None:
             if not pairs:
                 continue
             axis.plot(
-                [p[0] for p in pairs], [p[1] for p in pairs],
-                color=style.CATEGORICAL[index], marker=style.MARKERS[index],
+                [p[0] for p in pairs],
+                [p[1] for p in pairs],
+                color=style.CATEGORICAL[index],
+                marker=style.MARKERS[index],
                 label=label,
             )
         # The cost of an ordinary DFT gradient, so the reader knows a
         # bond-space step costs k of them and how k grows.
-        plain = [(num(r, "natoms"), num(r, "energy_gradient_seconds"))
-                 for r in subset]
+        plain = [(num(r, "natoms"), num(r, "energy_gradient_seconds")) for r in subset]
         plain = [(a, b) for a, b in plain if np.isfinite(b)]
         if plain:
-            axis.plot([p[0] for p in plain], [p[1] for p in plain],
-                      color=style.INK_MUTED, ls="--", lw=1.2,
-                      label="plain DFT energy+gradient")
+            axis.plot(
+                [p[0] for p in plain],
+                [p[1] for p in plain],
+                color=style.INK_MUTED,
+                ls="--",
+                lw=1.2,
+                label="plain DFT energy+gradient",
+            )
         axis.set_xscale("log")
         axis.set_yscale("log")
         axis.set_xlabel("atoms")
@@ -534,8 +644,9 @@ def fig8() -> None:
     ]
     ax.barh(labels, values, color=colors, height=0.65)
     ax.axvline(0, color=style.INK_MUTED, lw=0.9)
-    ax.set_xlabel("change in median heavy-atom RMSD to TS vs the reference "
-                  "configuration (Å)")
+    ax.set_xlabel(
+        "change in median heavy-atom RMSD to TS vs the reference configuration (Å)"
+    )
     ax.set_title("Sensitivity to each knob (worse to the right)", loc="left")
     ax.tick_params(axis="y", labelsize=7)
     fig.tight_layout()
@@ -543,8 +654,14 @@ def fig8() -> None:
 
 
 FIGURES = {
-    "fig1": fig1, "fig2": fig2, "fig3": fig3, "fig4": fig4,
-    "fig5": fig5, "fig6": fig6, "fig7": fig7, "fig8": fig8,
+    "fig1": fig1,
+    "fig2": fig2,
+    "fig3": fig3,
+    "fig4": fig4,
+    "fig5": fig5,
+    "fig6": fig6,
+    "fig7": fig7,
+    "fig8": fig8,
 }
 
 

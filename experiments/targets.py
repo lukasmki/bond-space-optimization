@@ -165,7 +165,9 @@ def enumerate_l2_moves(atoms: Atoms, thresh: float = 0.5) -> list:
     return _network_module().enumerate_moves(atoms, thresh=thresh)
 
 
-def l2_targets(atoms: Atoms, move, half: float = 0.5, thresh: float = 0.5) -> list[Target]:
+def l2_targets(
+    atoms: Atoms, move, half: float = 0.5, thresh: float = 0.5
+) -> list[Target]:
     """Half-target one enumerated move, leaving every other bond as it is.
 
     `network.target_bonds` keeps the existing bonds at their rounded integer
@@ -261,13 +263,15 @@ def integer_disagreements(rxn: Reaction) -> list[dict]:
                 rounded = int(np.round(B[i, j]))
                 lewis = rxn.lewis_order(side, i, j)
                 if rounded != lewis:
-                    out.append({
-                        "reaction": rxn.id,
-                        "side": side,
-                        "pair": [i, j],
-                        "mayer": float(B[i, j]),
-                        "rounded": rounded,
-                        "lewis": lewis,
-                        "distance_ang": float(distances[i, j]),
-                    })
+                    out.append(
+                        {
+                            "reaction": rxn.id,
+                            "side": side,
+                            "pair": [i, j],
+                            "mayer": float(B[i, j]),
+                            "rounded": rounded,
+                            "lewis": lewis,
+                            "distance_ang": float(distances[i, j]),
+                        }
+                    )
     return out

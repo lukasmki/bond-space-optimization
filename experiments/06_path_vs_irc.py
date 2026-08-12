@@ -100,8 +100,7 @@ def _build_path(method: str, rxn, reference, production, args) -> dict:
     if method == "bondspace":
         bonds = targets_mod.l1_targets(rxn, "p")
         result = drive.drive(
-            reference["r_atoms"], bonds, rxn.charge, rxn.spin, production,
-            steps=steps
+            reference["r_atoms"], bonds, rxn.charge, rxn.spin, production, steps=steps
         )
         return {
             "frames": result.frames + [result.atoms],
@@ -119,8 +118,12 @@ def _build_path(method: str, rxn, reference, production, args) -> dict:
         images = [reference["r_atoms"].copy() for _ in range(n - 1)] + [product]
         neb = NEB(images)
         neb.interpolate(method="idpp" if method == "idpp" else "linear")
-        return {"frames": images, "pes_calls": 0, "outcome": "interpolated",
-                "converged": True}
+        return {
+            "frames": images,
+            "pes_calls": 0,
+            "outcome": "interpolated",
+            "converged": True,
+        }
     if method == "cineb":
         from ase.mep import NEB
         from ase.optimize import FIRE
@@ -142,12 +145,14 @@ def _build_path(method: str, rxn, reference, production, args) -> dict:
 
             image.calc.calculate = counted  # type: ignore[method-assign]
         converged = bool(
-            FIRE(neb, logfile=None).run(
-                fmax=0.1, steps=10 if args.smoke else 50
-            )
+            FIRE(neb, logfile=None).run(fmax=0.1, steps=10 if args.smoke else 50)
         )
-        return {"frames": images, "pes_calls": calls["n"], "outcome": "neb",
-                "converged": converged}
+        return {
+            "frames": images,
+            "pes_calls": calls["n"],
+            "outcome": "neb",
+            "converged": converged,
+        }
     raise ValueError(f"unknown path method {method!r}")
 
 
@@ -157,8 +162,12 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
     reference = e01.load_reference(rxn.id)
     if reference is None:
         rec.status = "skipped"
-        rec.metrics = {"reaction": rxn.id, "method": method, "excluded": True,
-                       "exclusion_reason": "no verified reference from E01"}
+        rec.metrics = {
+            "reaction": rxn.id,
+            "method": method,
+            "excluded": True,
+            "exclusion_reason": "no verified reference from E01",
+        }
         print("       skipped: no verified reference", flush=True)
         return
 
@@ -183,8 +192,10 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
             {f"tube_{k}": v for k, v in quality.tube_distance(frames, irc).items()}
         )
         metrics.update(
-            {f"progress_{k}": v
-             for k, v in quality.progress_monotonicity(frames, irc).items()}
+            {
+                f"progress_{k}": v
+                for k, v in quality.progress_monotonicity(frames, irc).items()
+            }
         )
         # Mutual validation: E01's IRC against the shipped one.  Only run on
         # the bondspace job so it is computed once per reaction.
@@ -243,11 +254,16 @@ def main() -> None:
     jobs = jobs_for(EXPERIMENT)
     if args.smoke:
         jobs = common.pick_smoke_jobs(
-            jobs, args, n=2,
+            jobs,
+            args,
+            n=2,
             prefer=lambda s: e01.load_reference(s.params["reaction"]) is not None,
         )
     common.main_loop(
-        EXPERIMENT, jobs, args, production,
+        EXPERIMENT,
+        jobs,
+        args,
+        production,
         lambda spec, rec: run_one(spec, rec, production, verify, args),
     )
 

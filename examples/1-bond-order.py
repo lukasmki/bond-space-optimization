@@ -35,9 +35,10 @@ def report(atoms: Atoms, label: str) -> np.ndarray:
 
     # Mayer valence: how much bonding capacity each atom is using.
     valence = B.sum(axis=1) - np.diag(B)
-    print("Mayer valences: " + "  ".join(
-        f"{s}{i}={v:.3f}" for i, (s, v) in enumerate(zip(sym, valence))
-    ))
+    print(
+        "Mayer valences: "
+        + "  ".join(f"{s}{i}={v:.3f}" for i, (s, v) in enumerate(zip(sym, valence)))
+    )
     return B
 
 

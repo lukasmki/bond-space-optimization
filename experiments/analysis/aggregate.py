@@ -27,16 +27,42 @@ import quality  # noqa: E402
 TABLES = HERE.parent / "results" / "tables"
 
 #: Columns lifted out of every record, whatever the experiment.
-BASE_COLUMNS = ("experiment", "key", "status", "inputs_hash", "restarted",
-                "wall_seconds", "hostname", "git_commit")
+BASE_COLUMNS = (
+    "experiment",
+    "key",
+    "status",
+    "inputs_hash",
+    "restarted",
+    "wall_seconds",
+    "hostname",
+    "git_commit",
+)
 
 #: Nested or list-valued metrics that would make a CSV cell unreadable.  They
 #: stay in the JSON, which is the record of truth; the CSV is for plotting.
-SKIP = {"wavenumbers", "targets", "moves", "edges", "recall_table", "runs",
-        "integer_disagreements", "profile_energies_ev", "reference_mayer",
-        "drive_kwargs", "level", "irc_expected", "irc_observed", "nodes",
-        "zvector_seconds_all", "direct_seconds_all", "restrict_seconds_all",
-        "composition", "budget", "max_degree_prior", "per_pair"}
+SKIP = {
+    "wavenumbers",
+    "targets",
+    "moves",
+    "edges",
+    "recall_table",
+    "runs",
+    "integer_disagreements",
+    "profile_energies_ev",
+    "reference_mayer",
+    "drive_kwargs",
+    "level",
+    "irc_expected",
+    "irc_observed",
+    "nodes",
+    "zvector_seconds_all",
+    "direct_seconds_all",
+    "restrict_seconds_all",
+    "composition",
+    "budget",
+    "max_degree_prior",
+    "per_pair",
+}
 
 
 def flatten(record: dict) -> dict:
@@ -97,29 +123,34 @@ def summarise_tiers(rows: list[dict]) -> list[dict]:
         groups.setdefault(key, []).append(row)
 
     out = []
-    for (experiment, group), members in sorted(groups.items(), key=lambda kv: str(kv[0])):
+    for (experiment, group), members in sorted(
+        groups.items(), key=lambda kv: str(kv[0])
+    ):
         n = len(members)
         for tier in ("T0", "T1", "T2", "T3", "T4"):
             column = f"tier_{tier}"
             passed = sum(1 for m in members if m.get(column) in (True, "True"))
             low, high = quality.wilson_interval(passed, n)
-            out.append({
-                "experiment": experiment,
-                "group": group,
-                "tier": tier,
-                "passed": passed,
-                "trials": n,
-                "rate": passed / n if n else float("nan"),
-                "wilson_low": low,
-                "wilson_high": high,
-            })
+            out.append(
+                {
+                    "experiment": experiment,
+                    "group": group,
+                    "tier": tier,
+                    "passed": passed,
+                    "trials": n,
+                    "rate": passed / n if n else float("nan"),
+                    "wilson_low": low,
+                    "wilson_high": high,
+                }
+            )
     return out
 
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--experiment", default=None,
-                        help="aggregate only this experiment")
+    parser.add_argument(
+        "--experiment", default=None, help="aggregate only this experiment"
+    )
     args = common.parse_args(parser)
 
     runs = common.RESULTS / "runs"
@@ -128,7 +159,8 @@ def main() -> None:
         return
 
     names = (
-        [args.experiment] if args.experiment
+        [args.experiment]
+        if args.experiment
         else sorted(p.name for p in runs.iterdir() if p.is_dir())
     )
 
@@ -150,10 +182,17 @@ def main() -> None:
         data = json.loads(atlas.read_text())
         write_csv(
             TABLES / "failure_classes.csv",
-            [{"experiment": "10_failure_atlas", "key": str(c), "status": "ok",
-              "class_id": c, "class_name": data["class_definitions"][str(c)],
-              "count": n}
-             for c, n in data["counts"].items()],
+            [
+                {
+                    "experiment": "10_failure_atlas",
+                    "key": str(c),
+                    "status": "ok",
+                    "class_id": c,
+                    "class_name": data["class_definitions"][str(c)],
+                    "count": n,
+                }
+                for c, n in data["counts"].items()
+            ],
         )
 
 

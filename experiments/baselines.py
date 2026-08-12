@@ -182,7 +182,9 @@ def cineb_guess(
     images += [product]
 
     neb = NEB(
-        images, climb=True, method="improvedtangent",
+        images,
+        climb=True,
+        method="improvedtangent",
         allow_shared_calculator=False,
     )
     neb.interpolate(method="idpp")

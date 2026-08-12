@@ -58,15 +58,18 @@ if __name__ == "__main__":
         _, f_on = probe(r, 0.5)
         rows.append((r, B, f_off, f_on))
         ratio = f_on / f_off if f_off > 1e-9 else float("inf")
-        print(f"   {r:6.2f}    {B:9.4f}    {f_off:13.5f}   {f_on:12.5f}  "
-              f"{ratio:9.0f}x")
+        print(f"   {r:6.2f}    {B:9.4f}    {f_off:13.5f}   {f_on:12.5f}  {ratio:9.0f}x")
 
     r0, B0, off0, on0 = rows[0]
     r1, B1, off1, on1 = rows[3]
-    print(f"\nFrom {r0} to {r1} A the bond order falls {B0:.3f} -> {B1:.3f}, a factor of"
-          f" {B0 / B1:.0f},")
-    print(f"but the bond-order force falls {off0:.4f} -> {off1:.4f}, a factor of"
-          f" {off0 / off1:.0f}.")
+    print(
+        f"\nFrom {r0} to {r1} A the bond order falls {B0:.3f} -> {B1:.3f}, a factor of"
+        f" {B0 / B1:.0f},"
+    )
+    print(
+        f"but the bond-order force falls {off0:.4f} -> {off1:.4f}, a factor of"
+        f" {off0 / off1:.0f}."
+    )
     print("The gradient vanishes much faster than the quantity itself, which is")
     print("the whole difficulty: past ~1.5 A there is nothing left to optimize.")
 

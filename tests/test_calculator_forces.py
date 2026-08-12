@@ -177,9 +177,7 @@ def test_pyscf_calculator_forces_match_finite_difference():
 
     def make(a: Atoms) -> Atoms:
         a = a.copy()
-        a.calc = PySCFCalculator(
-            charge=0, spin=1, basis=BASIS, level_shift=(0.3, 0.2)
-        )
+        a.calc = PySCFCalculator(charge=0, spin=1, basis=BASIS, level_shift=(0.3, 0.2))
         return a
 
     analytic = make(atoms).get_forces()

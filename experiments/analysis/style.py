@@ -52,34 +52,36 @@ RUNG_LABEL = {
 
 def apply() -> None:
     """Publication defaults: recessive axes, thin marks, no chartjunk."""
-    mpl.rcParams.update({
-        "figure.dpi": 150,
-        "savefig.dpi": 300,
-        "savefig.bbox": "tight",
-        "figure.facecolor": SURFACE,
-        "axes.facecolor": SURFACE,
-        "font.size": 9,
-        "axes.titlesize": 10,
-        "axes.labelsize": 9,
-        "axes.labelcolor": INK,
-        "axes.edgecolor": INK_MUTED,
-        "axes.linewidth": 0.8,
-        "axes.spines.top": False,
-        "axes.spines.right": False,
-        "axes.grid": True,
-        "axes.axisbelow": True,
-        "grid.color": GRID,
-        "grid.linewidth": 0.6,
-        "xtick.color": INK_MUTED,
-        "ytick.color": INK_MUTED,
-        "xtick.labelsize": 8,
-        "ytick.labelsize": 8,
-        "legend.frameon": False,
-        "legend.fontsize": 8,
-        "lines.linewidth": 2.0,
-        "lines.markersize": 5,
-        "text.color": INK,
-    })
+    mpl.rcParams.update(
+        {
+            "figure.dpi": 150,
+            "savefig.dpi": 300,
+            "savefig.bbox": "tight",
+            "figure.facecolor": SURFACE,
+            "axes.facecolor": SURFACE,
+            "font.size": 9,
+            "axes.titlesize": 10,
+            "axes.labelsize": 9,
+            "axes.labelcolor": INK,
+            "axes.edgecolor": INK_MUTED,
+            "axes.linewidth": 0.8,
+            "axes.spines.top": False,
+            "axes.spines.right": False,
+            "axes.grid": True,
+            "axes.axisbelow": True,
+            "grid.color": GRID,
+            "grid.linewidth": 0.6,
+            "xtick.color": INK_MUTED,
+            "ytick.color": INK_MUTED,
+            "xtick.labelsize": 8,
+            "ytick.labelsize": 8,
+            "legend.frameon": False,
+            "legend.fontsize": 8,
+            "lines.linewidth": 2.0,
+            "lines.markersize": 5,
+            "text.color": INK,
+        }
+    )
 
 
 def save(fig, name: str) -> None:

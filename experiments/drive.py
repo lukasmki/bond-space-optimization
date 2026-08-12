@@ -190,9 +190,7 @@ def verify_ts(
     metrics["barrier_kcal"] = quality.barrier_kcal(
         point["energy"], reference["r_energy"]
     )
-    metrics["barrier_error_kcal"] = (
-        metrics["barrier_kcal"] - reference["barrier_kcal"]
-    )
+    metrics["barrier_error_kcal"] = metrics["barrier_kcal"] - reference["barrier_kcal"]
 
     spectrum = spectra.hessian_spectrum(located, rxn.charge, rxn.spin, level)
     metrics["n_imaginary"] = spectrum.n_imaginary

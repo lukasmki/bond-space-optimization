@@ -55,9 +55,11 @@ if __name__ == "__main__":
     def log() -> None:
         B = atoms.get_array("bond-order")
         images.append(atoms.copy())
-        print(f"  {len(images) - 1:3d}    {atoms.get_distance(0, 1):7.3f}   "
-              f"{atoms.get_distance(1, 2):7.3f}     {B[0, 1]:7.3f}   {B[1, 2]:7.3f}"
-              f"      {atoms.get_potential_energy():10.4f}")
+        print(
+            f"  {len(images) - 1:3d}    {atoms.get_distance(0, 1):7.3f}   "
+            f"{atoms.get_distance(1, 2):7.3f}     {B[0, 1]:7.3f}   {B[1, 2]:7.3f}"
+            f"      {atoms.get_potential_energy():10.4f}"
+        )
 
     opt = FIRE2(atoms, logfile=None)
     opt.attach(log, 1)

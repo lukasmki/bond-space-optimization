@@ -205,9 +205,11 @@ def _geometric_relax(
         with tempfile.TemporaryDirectory() as tmp:
             xyz = Path(tmp) / "start.xyz"
             atoms.write(xyz, format="xyz")
-            engine = EngineASE.from_calculator_string(
-                str(xyz), "", calculator=atoms.calc
-            ) if hasattr(EngineASE, "from_calculator_string") else None
+            engine = (
+                EngineASE.from_calculator_string(str(xyz), "", calculator=atoms.calc)
+                if hasattr(EngineASE, "from_calculator_string")
+                else None
+            )
             if engine is None:
                 from geometric.molecule import Molecule
 
@@ -273,13 +275,37 @@ def refine_saddle(
     }
 
 
+def _curvature_aware_irc(work: Atoms, dx: float):
+    """Sella's `IRC`, with its own convergence test reconnected to ASE >= 3.29.
+
+    Sella 2.5.0 overrides `Optimizer.converged`, which used to be what the
+    optimisation loop called.  ASE 3.29 inverted that: `Dynamics.irun` now
+    calls `gradient_converged` and it is `converged` that delegates to *it*.
+    Sella's override is therefore never reached, and the IRC silently falls
+    back to ASE's plain `max|force| < fmax`.
+
+    That is not a small difference.  Sella's criterion additionally demands
+    `evals[0] > 0` -- positive curvature -- for the express purpose of
+    refusing to stop at a saddle, where the gradient vanishes by definition.
+    Without it an IRC started from a well-converged transition state halts one
+    step off it and reports both directions as the same structure.
+    """
+    from sella import IRC
+
+    class _IRC(IRC):
+        def gradient_converged(self, gradient):
+            return IRC.converged(self)
+
+    return _IRC(work, dx=dx, logfile=None, keep_going=True)
+
+
 def run_irc(
     atoms: Atoms,
     charge: int,
     spin: int,
     level: Level,
     *,
-    fmax: float = 0.05,
+    fmax: float = 0.02,
     steps: int = 60,
     dx: float = 0.1,
 ) -> dict:
@@ -291,8 +317,6 @@ def run_irc(
     reactant and product -- E02's T4 and E07's edge verification both turn on
     this.
     """
-    from sella import IRC
-
     # One IRC object run twice, not two objects: sella diagonalises the mass-
     # weighted Hessian on the first call and restores that same `v0ts` for the
     # second direction, so the two branches are guaranteed to be opposite
@@ -301,17 +325,23 @@ def run_irc(
     work = atoms.copy()
     work.calc = make_calculator(charge, spin, level)
     frames: list[Atoms] = []
-    opt = IRC(work, dx=dx, logfile=None, keep_going=True)
+    opt = _curvature_aware_irc(work, dx)
     opt.attach(lambda: frames.append(work.copy()))
 
     out: dict = {}
     for direction in ("forward", "reverse"):
         frames.clear()
         converged = bool(opt.run(fmax=fmax, steps=steps, direction=direction))
+        # How far the branch actually travelled.  An IRC that stops on the
+        # saddle is indistinguishable from one that connects nothing, and it
+        # reports success either way -- so record the displacement and let the
+        # caller refuse to draw a conclusion from a branch that never moved.
+        displacement = float(np.abs(work.get_positions() - atoms.get_positions()).max())
         out[direction] = {
             "atoms": work.copy(),
             "frames": list(frames),
             "converged": converged,
+            "displacement": displacement,
             "steps": opt.get_number_of_steps(),
         }
     return out

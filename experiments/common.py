@@ -137,9 +137,7 @@ def hash_inputs(spec: dict, level_dict: dict) -> str:
     recorded in the run record, so provenance is not lost -- it is simply not
     part of the cache key.
     """
-    payload = canonical(
-        {"spec": spec, "level": level_dict, "schema": SCHEMA_VERSION}
-    )
+    payload = canonical({"spec": spec, "level": level_dict, "schema": SCHEMA_VERSION})
     blob = json.dumps(payload, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(blob.encode()).hexdigest()[:16]
 
@@ -153,8 +151,11 @@ class JobSpec:
     params: dict = field(default_factory=dict)
 
     def as_dict(self) -> dict:
-        return {"experiment": self.experiment, "key": self.key,
-                "params": canonical(self.params)}
+        return {
+            "experiment": self.experiment,
+            "key": self.key,
+            "params": canonical(self.params),
+        }
 
     def rng(self) -> np.random.Generator:
         """A reproducible RNG for this job alone, independent of run order."""
@@ -431,29 +432,54 @@ class TrajectoryWriter:
 
 
 def add_standard_args(parser: argparse.ArgumentParser) -> argparse.ArgumentParser:
-    parser.add_argument("--index", type=int, default=None,
-                        help="run only job N (0-based); defaults to "
-                             "SLURM_ARRAY_TASK_ID when set")
-    parser.add_argument("--chunk", type=int, default=1,
-                        help="jobs per --index, for when array size limits bite")
-    parser.add_argument("--list", action="store_true",
-                        help="print the job count and exit (for array bounds)")
-    parser.add_argument("--dry-run", action="store_true",
-                        help="list the jobs that would run, without running")
-    parser.add_argument("--force", action="store_true",
-                        help="recompute even completed jobs")
-    parser.add_argument("--force-failed", action="store_true",
-                        help="recompute only jobs whose status is not ok")
-    parser.add_argument("--smoke", action="store_true",
-                        help="one job at a minimal basis with tight caps")
-    parser.add_argument("--no-cache", action="store_true",
-                        help="bypass the single-point cache")
-    parser.add_argument("--verify-cache", type=float, default=0.0,
-                        metavar="FRACTION",
-                        help="recompute this fraction of cache hits and assert "
-                             "agreement")
-    parser.add_argument("--threads", type=int, default=None,
-                        help="override the thread count")
+    parser.add_argument(
+        "--index",
+        type=int,
+        default=None,
+        help="run only job N (0-based); defaults to SLURM_ARRAY_TASK_ID when set",
+    )
+    parser.add_argument(
+        "--chunk",
+        type=int,
+        default=1,
+        help="jobs per --index, for when array size limits bite",
+    )
+    parser.add_argument(
+        "--list",
+        action="store_true",
+        help="print the job count and exit (for array bounds)",
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="list the jobs that would run, without running",
+    )
+    parser.add_argument(
+        "--force", action="store_true", help="recompute even completed jobs"
+    )
+    parser.add_argument(
+        "--force-failed",
+        action="store_true",
+        help="recompute only jobs whose status is not ok",
+    )
+    parser.add_argument(
+        "--smoke",
+        action="store_true",
+        help="one job at a minimal basis with tight caps",
+    )
+    parser.add_argument(
+        "--no-cache", action="store_true", help="bypass the single-point cache"
+    )
+    parser.add_argument(
+        "--verify-cache",
+        type=float,
+        default=0.0,
+        metavar="FRACTION",
+        help="recompute this fraction of cache hits and assert agreement",
+    )
+    parser.add_argument(
+        "--threads", type=int, default=None, help="override the thread count"
+    )
     return parser
 
 
@@ -502,7 +528,7 @@ def select_jobs(jobs: Sequence[JobSpec], args: argparse.Namespace) -> list[JobSp
     if index is None:
         return list(jobs)
     start = index * args.chunk
-    return list(jobs[start:start + args.chunk])
+    return list(jobs[start : start + args.chunk])
 
 
 @contextmanager

@@ -89,8 +89,7 @@ def test_l1_tau_interpolates_between_the_integer_endpoints():
 def test_asymmetric_targets_split_breaking_and_forming():
     """tau on the breaking pair, 1 - tau on the forming one."""
     rxn = systems.by_id()["rxn_03"]
-    bonds = dict(((i, j), v) for i, j, v in
-                 targets_mod.l1_asymmetric_targets(rxn, 0.3))
+    bonds = dict(((i, j), v) for i, j, v in targets_mod.l1_asymmetric_targets(rxn, 0.3))
     assert bonds[(0, 1)] == pytest.approx(0.7)  # breaking 1 -> 0, 30% of the way
     assert bonds[(1, 3)] == pytest.approx(0.7)  # forming 0 -> 1, 70% of the way
 
@@ -232,7 +231,9 @@ def test_run_record_round_trips_through_json():
     import json
 
     rec = common.RunRecord(
-        experiment="test", key="k", inputs_hash="abc",
+        experiment="test",
+        key="k",
+        inputs_hash="abc",
         metrics={"a": np.float64(1.5), "b": [np.int64(2)]},
     )
     restored = json.loads(json.dumps(rec.as_dict()))

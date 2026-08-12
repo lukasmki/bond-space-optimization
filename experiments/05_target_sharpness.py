@@ -80,9 +80,13 @@ def run_one(spec: JobSpec, rec: RunRecord, production, verify, args) -> None:
     reference = e01.load_reference(rxn.id)
     if reference is None:
         rec.status = "skipped"
-        rec.metrics = {"reaction": rxn.id, "tau": tau, "mode": mode,
-                       "excluded": True,
-                       "exclusion_reason": "no verified reference from E01"}
+        rec.metrics = {
+            "reaction": rxn.id,
+            "tau": tau,
+            "mode": mode,
+            "excluded": True,
+            "exclusion_reason": "no verified reference from E01",
+        }
         print("       skipped: no verified reference", flush=True)
         return
 
@@ -144,11 +148,16 @@ def main() -> None:
     jobs = jobs_for(EXPERIMENT)
     if args.smoke:
         jobs = common.pick_smoke_jobs(
-            jobs, args, n=2,
+            jobs,
+            args,
+            n=2,
             prefer=lambda s: e01.load_reference(s.params["reaction"]) is not None,
         )
     common.main_loop(
-        EXPERIMENT, jobs, args, production,
+        EXPERIMENT,
+        jobs,
+        args,
+        production,
         lambda spec, rec: run_one(spec, rec, production, verify, args),
     )
 
