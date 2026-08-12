@@ -40,8 +40,16 @@ from systems import by_id
 EXPERIMENT = "01_reference_states"
 
 
-def reference_path(reaction: str):
-    return common.RESULTS / "reference" / f"{reaction}.xyz"
+def reference_path(reaction: str, suffix: str = ".xyz"):
+    """Where a reference artifact goes, with the directory guaranteed to exist.
+
+    Same reasoning as `common.traj_path`: these writes come after the whole
+    expensive part of the job, so a missing parent directory throws away hours.
+    `exist_ok` makes it safe for concurrent array tasks.
+    """
+    path = common.RESULTS / "reference" / f"{reaction}{suffix}"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    return path
 
 
 def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
@@ -154,7 +162,7 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
             "forward"
         ]["frames"]
         io.write(
-            common.RESULTS / "reference" / f"{rxn.id}-irc.xyz",
+            reference_path(rxn.id, "-irc.xyz"),
             path,
             format="extxyz",
         )
@@ -174,14 +182,13 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
 
     # --- persist the reference geometries -------------------------------
     path = reference_path(rxn.id)
-    path.parent.mkdir(parents=True, exist_ok=True)
     frames = [relaxed["r"], ts_atoms, relaxed["p"]]
     for name, frame in zip(("r", "ts", "p"), frames):
         frame.info["id"] = f"{rxn.id}-{name}"
         frame.info["verified"] = verified
     io.write(path, frames, format="extxyz")
     np.save(
-        common.RESULTS / "reference" / f"{rxn.id}-mode.npy",
+        reference_path(rxn.id, "-mode.npy"),
         ts_spectrum.imaginary_mode
         if ts_spectrum.imaginary_mode is not None
         else np.zeros((rxn.natoms, 3)),
@@ -218,7 +225,7 @@ def load_reference(reaction: str) -> dict | None:
         return None
     frames = io.read(reference_path(reaction), index=":")
     assert isinstance(frames, list)
-    mode_path = common.RESULTS / "reference" / f"{reaction}-mode.npy"
+    mode_path = reference_path(reaction, "-mode.npy")
     return {
         "r_atoms": frames[0],
         "ts_atoms": frames[1],
