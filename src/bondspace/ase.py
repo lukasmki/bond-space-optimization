@@ -39,6 +39,16 @@ class PySCFCalculator(Calculator):
         # consistent with neither.  A BFGS relaxation driven that way oscillates
         # instead of converging.  Set False whenever the *surface* has to be
         # single-valued -- minimisations, Hessians, IRCs.
+        #
+        # Turning it off means clearing `forces_scanner.base.mo_coeff` before
+        # every call, which `calculate` does.  Nothing else reaches the guess:
+        # `SCF_GradScanner.__call__` forwards its kwargs to the *gradient*
+        # kernel, and the SCF's own scanner decides the guess for itself,
+        # rebuilding dm0 from whatever orbitals it is still holding
+        # (pyscf/scf/hf.py, `SCF_Scanner.__call__`).  Setting the `mo_coeff`
+        # attribute below is therefore not enough -- it was not enough for the
+        # first E01 run, where the surface stayed path-dependent despite the
+        # flag and left rxn_11's product recorded as relaxed at 2.05 eV/Ang.
         self.reuse_guess: bool = reuse_guess
         self.charge: int | None = charge
         self.spin: int | None = spin
@@ -77,6 +87,8 @@ class PySCFCalculator(Calculator):
         mol: gto.Mole = ase_to_pyscf(
             atoms, basis=self.basis, charge=self.charge, spin=self.spin
         )
+        if not self.reuse_guess:
+            self.forces_scanner.base.mo_coeff = None
         energy, gradient = self.forces_scanner(mol, mo_coeff=self.mo_coeff)
         forces = -gradient
 
@@ -292,6 +304,8 @@ class BondFluxCalculator(Calculator):
             atoms, basis=self.basis, charge=self.charge, spin=self.spin
         )
 
+        if not self.reuse_guess:
+            self.forces_scanner.base.mo_coeff = None
         pes_energy, pes_gradient = self.forces_scanner(mol, mo_coeff=self.mo_coeff)
         # pes_forces = -pes_gradient
 
