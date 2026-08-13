@@ -221,6 +221,32 @@ SPIN_NONCONSERVING = frozenset(
     {"rxn_05", "rxn_06", "rxn_07", "rxn_08", "rxn_09", "rxn_15"}
 )
 
+#: The subset of those that break a *single* bond, and therefore have no
+#: first-order saddle to find at all: the energy rises monotonically to the
+#: dissociation asymptote.  Excluded from every TS metric.
+#:
+#: E01's first run measured both halves of this.  rxn_07 refined to O-H =
+#: 3.07 Ang (from 0.98) with `n_imaginary = 0` and a "barrier" of 101.6
+#: kcal/mol, which is D(O-H) rather than a barrier.  rxn_06 refined to O-O =
+#: 19.9 Ang while its relaxed reactant *and* its relaxed product both sat at
+#: O-O = 1.20 Ang -- at a fixed multiplicity the separated fragments fall back
+#: into the bound molecule, so R and P are one state with nothing between them.
+#: Saddle refinement therefore walks down the dissociation coordinate until the
+#: fixed-spin UKS SCF stops converging, which is how 05, 06 and 08 spent
+#: 19-53 minutes each before raising.
+#:
+#: rxn_09 and rxn_15 are spin-non-conserving too but are *not* here: their
+#: fragments have internal structure, they verify, and both are in
+#: ABLATION_SUBSET.
+BARRIERLESS = frozenset({"rxn_05", "rxn_06", "rxn_07", "rxn_08"})
+
+#: The reason string used wherever a barrierless reaction is excluded, so E10
+#: and the paper quote one sentence rather than three paraphrases.
+BARRIERLESS_REASON = (
+    "barrierless single-bond dissociation: no first-order saddle at fixed spin "
+    "(pre-registered)"
+)
+
 
 def _legacy_rxn_data() -> dict:
     """data/util.py's charge/spin table, imported for cross-checking."""

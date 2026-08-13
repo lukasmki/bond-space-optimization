@@ -160,8 +160,9 @@ def relax(
     fmax: float = 0.01,
     steps: int = 200,
     internal: bool = False,
+    attempts: int = 3,
 ) -> tuple[Atoms, bool, int]:
-    """Relax to a minimum on the true PES.
+    """Relax to a minimum on the true PES, and *check* that it is one.
 
     Uses BFGS rather than FIRE2: this is a real potential energy surface with
     a meaningful curvature scale, and the tight fmax the reference states need
@@ -174,22 +175,65 @@ def relax(
     failing, since geomeTRIC's coordinate system construction can itself fail
     on a dissociated graph, and a reference state that quietly did not relax
     is worse than one that relaxed by a different route.
+
+    An optimiser's own convergence flag is not evidence here, because it
+    describes the SCF solution *that optimiser* was following.  These systems
+    are open-shell radical pairs with more than one solution: on rxn_11's
+    product the optimiser finished at max|F| = 0.0065 eV/Ang while a calculator
+    started fresh at the identical geometry gives 2.06 -- two internally
+    consistent branches 6 meV apart in energy, and finite differences of the
+    energy agree with whichever branch is asking.  The first E01 run recorded
+    that geometry as `p_relaxed: True` next to `p_max_force: 2.05`, and rxn_04's
+    reactant the same way.
+
+    So convergence is decided by re-evaluating on a fresh calculator -- the
+    same one `single_point` and every recorded energy uses -- and the
+    relaxation is restarted from that geometry, which makes the new calculator
+    the one being followed.  What comes back is a minimum of the branch the
+    study actually reports, or `converged=False`.  The returned atoms carry the
+    fresh calculator, so the energies, forces and bond orders written alongside
+    a reference frame are the ones it was judged by.
     """
     work = atoms.copy()
-    work.calc = make_calculator(charge, spin, level)
-    if internal:
-        relaxed = _geometric_relax(work, fmax=fmax, steps=steps)
-        if relaxed is not None:
-            return relaxed
-    opt = BFGS(work, logfile=None)
-    converged = bool(opt.run(fmax=fmax, steps=steps))
-    return work, converged, opt.get_number_of_steps()
+    total = 0
+    for attempt in range(attempts):
+        work.calc = make_calculator(charge, spin, level)
+        if internal:
+            relaxed = _geometric_relax(work, fmax=fmax, steps=steps)
+            if relaxed is not None:
+                work, n = relaxed
+            else:
+                opt = BFGS(work, logfile=None)
+                opt.run(fmax=fmax, steps=steps)
+                n = opt.get_number_of_steps()
+        else:
+            opt = BFGS(work, logfile=None)
+            opt.run(fmax=fmax, steps=steps)
+            n = opt.get_number_of_steps()
+        total += n
+
+        work.calc = make_calculator(charge, spin, level)
+        residual = float(np.linalg.norm(work.get_forces(), axis=1).max())
+        if residual < fmax:
+            return work, True, total
+        if attempt + 1 < attempts:
+            print(
+                f"    [relax] max|F| = {residual:.4f} > {fmax} on a fresh "
+                f"calculator after {n} steps; restarting from here",
+                flush=True,
+            )
+    return work, False, total
 
 
 def _geometric_relax(
     atoms: Atoms, *, fmax: float, steps: int
-) -> tuple[Atoms, bool, int] | None:
-    """geomeTRIC minimisation; None if its coordinate system cannot be built."""
+) -> tuple[Atoms, int] | None:
+    """geomeTRIC minimisation; None if its coordinate system cannot be built.
+
+    Returns no convergence flag: `relax` decides that on a fresh calculator,
+    and a flag from the optimiser's own SCF branch is exactly the thing that
+    cannot be trusted here.
+    """
     import tempfile
     from pathlib import Path
 
@@ -226,9 +270,7 @@ def _geometric_relax(
         work = atoms.copy()
         work.set_positions(result.xyzs[-1])
         work.calc = atoms.calc
-        forces = work.get_forces()
-        converged = bool(np.linalg.norm(forces, axis=1).max() < fmax)
-        return work, converged, len(result.xyzs) - 1
+        return work, len(result.xyzs) - 1
     except Exception:
         # geomeTRIC's internal-coordinate construction is the fragile part;
         # falling back is preferable to losing the reference state.
@@ -370,6 +412,36 @@ def species_label(atoms: Atoms, thresh: float = 0.5) -> str:
     return network.species_label(atoms, thresh=thresh)
 
 
+def fragment_separation(atoms: Atoms, thresh: float = 0.5) -> float | None:
+    """Closest approach between two different fragments, Angstrom.
+
+    `species_label` is all-or-nothing: two fragments 1.85 Ang apart and two
+    fragments 6 Ang apart are both "one species" if the Mayer order between
+    them clears `thresh`.  This number is what says which of the two a label
+    describes, and so whether a relaxation that was supposed to separate the
+    products actually did.  ``None`` when everything is one fragment.
+    """
+    import sys
+    from pathlib import Path
+
+    data = Path(__file__).parent.parent / "data"
+    if str(data) not in sys.path:
+        sys.path.insert(0, str(data))
+    import network  # type: ignore[import-not-found]
+
+    parts = network.fragments(atoms, thresh)
+    if len(parts) < 2:
+        return None
+    distances = atoms.get_all_distances()
+    return float(
+        min(
+            distances[np.ix_(a, b)].min()
+            for i, a in enumerate(parts)
+            for b in parts[i + 1 :]
+        )
+    )
+
+
 def irc_connects(
     irc: dict,
     reactant: Atoms,
@@ -379,7 +451,8 @@ def irc_connects(
     level: Level,
     *,
     thresh: float = 0.5,
-    relax_steps: int = 60,
+    relax_fmax: float = 0.01,
+    relax_steps: int = 300,
 ) -> dict:
     """Do the two IRC endpoints relax to the intended species?
 
@@ -387,16 +460,32 @@ def irc_connects(
     terminus at a finite step budget, so both must be relaxed on the real PES
     before their species label means anything -- the same reasoning
     data/network.py already applies before labelling a discovered node.
+
+    The relaxation matches the one E01 uses for its own reference endpoints --
+    internal coordinates, `fmax=0.01`, 300 steps -- because the two sides are
+    compared against each other and must not be relaxed by different
+    machinery.  The earlier settings (Cartesian BFGS, `fmax=0.05`, 60 steps)
+    were the case `relax`'s own docstring warns about: rxn_11's forward branch
+    stopped with two OH radicals still 1.85 Ang apart at a Mayer order of 0.95,
+    which the fragmenter then labelled `H2O2` and the run recorded as an IRC
+    that connects the wrong species.
     """
     want = {species_label(reactant, thresh), species_label(product, thresh)}
     got = {}
     for direction, result in irc.items():
         relaxed, converged, _ = relax(
-            result["atoms"], charge, spin, level, fmax=0.05, steps=relax_steps
+            result["atoms"],
+            charge,
+            spin,
+            level,
+            fmax=relax_fmax,
+            steps=relax_steps,
+            internal=True,
         )
         got[direction] = {
             "label": species_label(relaxed, thresh),
             "relax_converged": converged,
+            "separation": fragment_separation(relaxed, thresh),
             "atoms": relaxed,
         }
     labels = {v["label"] for v in got.values()}

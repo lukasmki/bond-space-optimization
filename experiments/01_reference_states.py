@@ -13,6 +13,12 @@ connects the intended endpoints.  A reaction whose TS cannot be verified is
 a reference-side failure so E10 can tell "the method failed" apart from "we
 could not tell".
 
+`systems.BARRIERLESS` -- the four single-bond homolyses -- is skipped outright.
+Those reactions have no first-order saddle to find at a fixed multiplicity, so
+refinement walks down the dissociation coordinate until the SCF gives up; the
+first run spent 19-53 minutes each proving it.  They are recorded as excluded
+with a reason rather than run.
+
 It also reports every place where round(Mayer B) on the reference frames
 disagrees with the Lewis integers in systems.py.  Those are the reactions
 where the L0 and L1 rungs genuinely ask for different chemistry.
@@ -35,7 +41,7 @@ import targets as targets_mod
 from common import JobSpec, RunRecord
 from levels import VERIFY, smoke_variant
 from registry import jobs_for
-from systems import by_id
+from systems import BARRIERLESS, BARRIERLESS_REASON, by_id
 
 EXPERIMENT = "01_reference_states"
 
@@ -67,6 +73,24 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
         "spin": rxn.spin,
         "natoms": rxn.natoms,
     }
+    # Bound to the record now, not at the end: every field added below survives
+    # an exception, because `run_job` writes whatever `rec` holds from its
+    # `finally`.  Assigning only on the last line is how the first run threw
+    # away four relaxed endpoint pairs and four refined saddles -- 19 to 127
+    # minutes each -- and left `metrics: {}` behind, which is also why a
+    # `grep verified` over the records did not list those reactions at all.
+    rec.metrics = metrics
+
+    if rxn.id in BARRIERLESS:
+        # Nothing below would find a saddle, and the search runs off down the
+        # dissociation coordinate until the SCF fails.  Recorded as a result so
+        # the denominator stays visible, at the cost of a second rather than an
+        # hour.
+        metrics["verified"] = False
+        metrics["excluded"] = True
+        metrics["exclusion_reason"] = BARRIERLESS_REASON
+        print(f"       skipped: {BARRIERLESS_REASON}", flush=True)
+        return
 
     # Where L0 and L1 diverge.  Reported here once, for every reaction, so the
     # ladder comparison in E03 can point at a cause rather than a mystery.
@@ -134,11 +158,6 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
     metrics["ts_energy_ev"] = ts_point["energy"]
     metrics["ts_max_force"] = ts_point["max_force"]
 
-    ts_spectrum = spectra.hessian_spectrum(ts_atoms, rxn.charge, rxn.spin, level)
-    metrics["ts_n_imaginary"] = ts_spectrum.n_imaginary
-    metrics["ts_omega_imaginary"] = ts_spectrum.omega_imaginary
-    metrics["ts_wavenumbers"] = ts_spectrum.wavenumbers.tolist()
-
     metrics["barrier_kcal"] = quality.barrier_kcal(
         ts_point["energy"], metrics["r_energy_ev"]
     )
@@ -149,9 +168,87 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
         metrics["p_energy_ev"], metrics["r_energy_ev"]
     )
 
+    # Written now and again at the end.  The Hessian below is the single most
+    # failure-prone call in this script, and losing the refined saddle to it
+    # means paying for the whole refinement again just to see where it went.
+    # The duplicate write is seconds against hours.
+    write_reference(rxn, relaxed, ts_atoms, verified=False, mode=None)
+
+    # --- harmonic analysis ----------------------------------------------
+    # A Hessian that cannot be computed makes the reaction unverifiable, which
+    # is a *result*: it belongs in the record next to everything above it, not
+    # in a traceback that discards them.  The dataset-TS Hessian above is
+    # already treated this way.
+    try:
+        ts_spectrum = spectra.hessian_spectrum(ts_atoms, rxn.charge, rxn.spin, level)
+    except RuntimeError as exc:
+        ts_spectrum = None
+        metrics["ts_hessian_error"] = str(exc)
+
+    # A second imaginary frequency is usually the optimiser stopping early on a
+    # floppy mode rather than a genuine second-order saddle: rxn_16 exited in 5
+    # Sella steps having moved 0.045 Ang, and its extra mode is 84i cm^-1 --
+    # a hindered rotation of a loosely bound complex, barely past
+    # IMAGINARY_CUTOFF_CM.  Tightening once and re-diagonalising distinguishes
+    # the two, and is kept only if it actually produces a first-order saddle,
+    # so nothing that already verified can change.
+    if ts_spectrum is not None and ts_spectrum.n_imaginary > 1:
+        metrics["ts_n_imaginary_loose"] = ts_spectrum.n_imaginary
+        metrics["ts_wavenumbers_loose"] = ts_spectrum.wavenumbers.tolist()
+        tighter = spectra.refine_saddle(
+            ts_atoms, rxn.charge, rxn.spin, level, fmax=0.005, steps=steps
+        )
+        try:
+            retried = spectra.hessian_spectrum(
+                tighter["atoms"], rxn.charge, rxn.spin, level
+            )
+        except RuntimeError as exc:
+            retried = None
+            metrics["ts_retry_hessian_error"] = str(exc)
+        metrics["ts_retry_converged"] = tighter["converged"]
+        metrics["ts_retry_n_imaginary"] = retried.n_imaginary if retried else None
+        if retried is not None and retried.n_imaginary == 1:
+            ts_atoms = tighter["atoms"]
+            ts_spectrum = retried
+            # The retry starts from the first refinement's output, so the cost
+            # of reaching this saddle is both legs -- E02 and E04 compare
+            # against `ts_refine_gradient_calls` as a basin-of-attraction
+            # measurement and would otherwise be handed a free head start.
+            refinement = {
+                **tighter,
+                "steps": refinement["steps"] + tighter["steps"],
+                "gradient_calls": (
+                    refinement["gradient_calls"] + tighter["gradient_calls"]
+                ),
+            }
+            metrics["ts_refine_converged"] = refinement["converged"]
+            metrics["ts_refine_steps"] = refinement["steps"]
+            metrics["ts_refine_gradient_calls"] = refinement["gradient_calls"]
+            ts_point = spectra.single_point(ts_atoms, rxn.charge, rxn.spin, level)
+            metrics["ts_energy_ev"] = ts_point["energy"]
+            metrics["ts_max_force"] = ts_point["max_force"]
+            metrics["ts_shift_rmsd_heavy"] = quality.permutation_rmsd(
+                rxn.ts, ts_atoms, heavy_only=True
+            )
+            metrics["ts_shift_rmsd_all"] = quality.permutation_rmsd(
+                rxn.ts, ts_atoms, heavy_only=False
+            )
+            metrics["barrier_kcal"] = quality.barrier_kcal(
+                ts_point["energy"], metrics["r_energy_ev"]
+            )
+            metrics["reverse_barrier_kcal"] = quality.barrier_kcal(
+                ts_point["energy"], metrics["p_energy_ev"]
+            )
+
+    metrics["ts_n_imaginary"] = ts_spectrum.n_imaginary if ts_spectrum else None
+    metrics["ts_omega_imaginary"] = ts_spectrum.omega_imaginary if ts_spectrum else None
+    metrics["ts_wavenumbers"] = (
+        ts_spectrum.wavenumbers.tolist() if ts_spectrum else None
+    )
+
     # --- does it connect the reaction we think it does? -----------------
     verified = False
-    if refinement["converged"] and ts_spectrum.n_imaginary == 1:
+    if refinement["converged"] and ts_spectrum and ts_spectrum.n_imaginary == 1:
         irc = spectra.run_irc(ts_atoms, rxn.charge, rxn.spin, level, steps=irc_steps)
         connection = spectra.irc_connects(
             irc, relaxed["r"], relaxed["p"], rxn.charge, rxn.spin, level
@@ -167,6 +264,14 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
             irc[d]["displacement"] > IRC_MIN_DISPLACEMENT
             for d in ("forward", "reverse")
         )
+        # Whether each terminus actually reached a minimum before it was
+        # labelled.  Without this, an endpoint label that disagrees with the
+        # intended product cannot be told apart from one whose relaxation ran
+        # out of steps -- which is exactly what rxn_11 turned out to be.
+        for direction, endpoint in connection["endpoints"].items():
+            metrics[f"irc_{direction}_label"] = endpoint["label"]
+            metrics[f"irc_{direction}_relax_converged"] = endpoint["relax_converged"]
+            metrics[f"irc_{direction}_fragment_separation"] = endpoint["separation"]
         verified = bool(connection["connects"])
 
         path = (
@@ -186,42 +291,49 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
     if not verified:
         # Named explicitly so downstream scripts exclude rather than score it,
         # and so the exclusion appears in the paper with a reason attached.
-        metrics["exclusion_reason"] = (
-            "sella did not converge"
-            if not refinement["converged"]
-            else (
-                f"n_imaginary={ts_spectrum.n_imaginary}"
-                if ts_spectrum.n_imaginary != 1
-                else (
-                    "IRC did not leave the saddle"
-                    if not metrics.get("irc_left_saddle", True)
-                    else "IRC did not connect the intended endpoints"
-                )
-            )
+        metrics["exclusion_reason"] = _exclusion_reason(
+            refinement, ts_spectrum, metrics
         )
 
-    # --- persist the reference geometries -------------------------------
-    path = reference_path(rxn.id)
-    frames = [relaxed["r"], ts_atoms, relaxed["p"]]
-    for name, frame in zip(("r", "ts", "p"), frames):
-        frame.info["id"] = f"{rxn.id}-{name}"
-        frame.info["verified"] = verified
-    io.write(path, frames, format="extxyz")
-    np.save(
-        reference_path(rxn.id, "-mode.npy"),
-        (
-            ts_spectrum.imaginary_mode
-            if ts_spectrum.imaginary_mode is not None
-            else np.zeros((rxn.natoms, 3))
-        ),
+    write_reference(
+        rxn,
+        relaxed,
+        ts_atoms,
+        verified=verified,
+        mode=ts_spectrum.imaginary_mode if ts_spectrum else None,
     )
 
-    rec.metrics = metrics
     print(
         f"       verified={verified}  n_imag={metrics['ts_n_imaginary']}  "
         f"barrier={metrics['barrier_kcal']:.1f} kcal/mol  "
         f"ts_shift={metrics['ts_shift_rmsd_heavy']:.3f} Ang",
         flush=True,
+    )
+
+
+def _exclusion_reason(refinement: dict, ts_spectrum, metrics: dict) -> str:
+    """Why this reaction has no trustworthy reference, in one phrase."""
+    if not refinement["converged"]:
+        return "sella did not converge"
+    if ts_spectrum is None:
+        return "SCF did not converge at the refined saddle"
+    if ts_spectrum.n_imaginary != 1:
+        return f"n_imaginary={ts_spectrum.n_imaginary}"
+    if not metrics.get("irc_left_saddle", True):
+        return "IRC did not leave the saddle"
+    return "IRC did not connect the intended endpoints"
+
+
+def write_reference(rxn, relaxed: dict, ts_atoms, *, verified: bool, mode) -> None:
+    """Persist the three reference frames and the imaginary mode."""
+    frames = [relaxed["r"], ts_atoms, relaxed["p"]]
+    for name, frame in zip(("r", "ts", "p"), frames):
+        frame.info["id"] = f"{rxn.id}-{name}"
+        frame.info["verified"] = verified
+    io.write(reference_path(rxn.id), frames, format="extxyz")
+    np.save(
+        reference_path(rxn.id, "-mode.npy"),
+        mode if mode is not None else np.zeros((rxn.natoms, 3)),
     )
 
 
@@ -265,10 +377,20 @@ def excluded_reactions() -> dict[str, str]:
     """Reactions with no trustworthy reference, and why.
 
     Every figure caption that reports a success rate must state this set.
+
+    `BARRIERLESS` wins over whatever the record says, because those reactions
+    were excluded before any of them ran.  Records written before that set
+    existed report `scf_fail`, which E10 would otherwise class as an
+    infrastructure failure -- the opposite of the truth, since the SCF failed
+    precisely *because* there was no saddle to walk to.
     """
-    out = {}
+    # Listed whether or not a record exists: the exclusion is a property of the
+    # reaction, not of whether anyone got round to running it.
+    out = {rid: BARRIERLESS_REASON for rid in sorted(BARRIERLESS)}
     for rec in common.load_records(EXPERIMENT):
         metrics = rec.get("metrics", {})
+        if rec["key"] in BARRIERLESS:
+            continue
         if rec.get("status") != "ok":
             out[rec["key"]] = f"reference run failed ({rec.get('status')})"
         elif not metrics.get("verified"):
