@@ -2,7 +2,7 @@
 
 The HCombustion geometries come from an external dataset at an unknown level
 of theory, and are almost certainly not stationary points under
-wB97X-D3/cc-pVDZ/DF.  Until they are re-optimised here, every RMSD and every
+wB97X-D3/cc-pVTZ/DF.  Until they are re-optimised here, every RMSD and every
 barrier in the suite would be measuring the level-of-theory shift as much as
 the method, and there would be no way to tell the two apart.
 
@@ -13,7 +13,7 @@ connects the intended endpoints.  A reaction whose TS cannot be verified is
 a reference-side failure so E10 can tell "the method failed" apart from "we
 could not tell".
 
-`systems.BARRIERLESS` -- the four single-bond homolyses -- is skipped outright.
+`systems.BARRIERLESS` -- the five single-bond homolyses -- is skipped outright.
 Those reactions have no first-order saddle to find at a fixed multiplicity, so
 refinement walks down the dissociation coordinate until the SCF gives up; the
 first run spent 19-53 minutes each proving it.  They are recorded as excluded
@@ -39,9 +39,9 @@ import quality
 import spectra
 import targets as targets_mod
 from common import JobSpec, RunRecord
-from levels import VERIFY, smoke_variant
+from levels import VERIFY, shifted_variant, smoke_variant
 from registry import jobs_for
-from systems import BARRIERLESS, BARRIERLESS_REASON, by_id
+from systems import BARRIERLESS, by_id, exclusion_reason
 
 EXPERIMENT = "01_reference_states"
 
@@ -86,10 +86,11 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
         # dissociation coordinate until the SCF fails.  Recorded as a result so
         # the denominator stays visible, at the cost of a second rather than an
         # hour.
+        reason = exclusion_reason(rxn.id)
         metrics["verified"] = False
         metrics["excluded"] = True
-        metrics["exclusion_reason"] = BARRIERLESS_REASON
-        print(f"       skipped: {BARRIERLESS_REASON}", flush=True)
+        metrics["exclusion_reason"] = reason
+        print(f"       skipped: {reason}", flush=True)
         return
 
     # Where L0 and L1 diverge.  Reported here once, for every reaction, so the
@@ -105,21 +106,28 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
     irc_steps = 30 if args.smoke else 80
 
     # --- endpoints ------------------------------------------------------
+    # Relaxed to the *separated* asymptote, not to whatever contact complex the
+    # dataset supplies.  Two fragments in contact are not the state their label
+    # claims: rxn_11's supplied product is two OH radicals with every atom
+    # 0.97-0.98 Ang from a neighbour, and relaxing it as given recombines to
+    # H2O + O -- which is rxn_04's product, to the last digit of its energy.
+    # Every barrier below is therefore an asymptotic barrier, the convention
+    # they are quoted against anyway.  See `spectra.separate_fragments`.
     relaxed = {}
     for side, frame in (("r", rxn.reactant), ("p", rxn.product)):
-        atoms, converged, n = spectra.relax(
+        atoms, converged, n, separated = spectra.relax_asymptote(
             frame,
             rxn.charge,
             rxn.spin,
             level,
             fmax=0.01,
             steps=steps,
-            internal=True,
         )
         point = spectra.single_point(atoms, rxn.charge, rxn.spin, level)
         relaxed[side] = atoms
         metrics[f"{side}_relaxed"] = converged
         metrics[f"{side}_relax_steps"] = n
+        metrics[f"{side}_separated"] = separated
         metrics[f"{side}_energy_ev"] = point["energy"]
         metrics[f"{side}_max_force"] = point["max_force"]
         metrics[f"{side}_species"] = spectra.species_label(atoms)
@@ -143,6 +151,8 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
     refinement = spectra.refine_saddle(
         rxn.ts, rxn.charge, rxn.spin, level, fmax=0.02, steps=steps
     )
+    if not refinement["converged"]:
+        refinement = _retry_shifted(rxn, refinement, level, steps, metrics)
     ts_atoms = refinement["atoms"]
     metrics["ts_refine_converged"] = refinement["converged"]
     metrics["ts_refine_steps"] = refinement["steps"]
@@ -272,6 +282,11 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
             metrics[f"irc_{direction}_label"] = endpoint["label"]
             metrics[f"irc_{direction}_relax_converged"] = endpoint["relax_converged"]
             metrics[f"irc_{direction}_fragment_separation"] = endpoint["separation"]
+            # What the terminus would have been called had it been relaxed in
+            # contact.  Equal to `label` unless separating changed the answer,
+            # which is the whole reason rxn_11 and rxn_13 failed the first run.
+            metrics[f"irc_{direction}_separated"] = endpoint["separated"]
+            metrics[f"irc_{direction}_label_contact"] = endpoint["label_contact"]
         verified = bool(connection["connects"])
 
         path = (
@@ -309,6 +324,52 @@ def run_one(spec: JobSpec, rec: RunRecord, level, args) -> None:
         f"ts_shift={metrics['ts_shift_rmsd_heavy']:.3f} Ang",
         flush=True,
     )
+
+
+def _retry_shifted(rxn, refinement: dict, level, steps: int, metrics: dict) -> dict:
+    """Resume a failed saddle refinement under a level shift.
+
+    rxn_18 is why this exists.  Its dataset TS has a clean imaginary mode
+    (-2020i), so there is a saddle there, but refinement spent all 300 steps
+    drifting 0.30 Ang without converging and the Hessian then failed outright
+    with "SCF did not converge".  That is an SCF problem on a stretched
+    open-shell geometry, not a missing stationary point, and a level shift is
+    what `data/1-run.py` already uses to get through exactly those.
+
+    A shift moves nothing at convergence (see `levels.shifted_variant`), so the
+    resumed geometry is legitimate -- but only the geometry.  Everything
+    recorded downstream is re-evaluated at the caller's unshifted level, and the
+    record's `level` field stays VERIFY, which is also what `inputs_hash`
+    covers: the shift is scaffolding and must not look like a second method.
+
+    Both legs are charged to `steps` and `gradient_calls`.  E02 and E04 read
+    `ts_refine_gradient_calls` as a basin-of-attraction measurement, and a
+    reference that reached its saddle in two goes must not be reported as
+    having done it in one.
+    """
+    shifted = spectra.refine_saddle(
+        refinement["atoms"],
+        rxn.charge,
+        rxn.spin,
+        shifted_variant(level),
+        fmax=0.02,
+        steps=steps,
+    )
+    # Named apart from the `ts_retry_*` block below: that one re-refines a
+    # second-order saddle, this one re-refines a non-converged SCF, and a run
+    # can need both.
+    metrics["ts_shift_retry_level_shift"] = list(shifted_variant(level).level_shift)
+    metrics["ts_shift_retry_converged"] = shifted["converged"]
+    metrics["ts_shift_retry_steps"] = shifted["steps"]
+    if not shifted["converged"]:
+        # Nothing gained, and the unshifted geometry is the one every other
+        # number in this record was computed from.  Keep it.
+        return refinement
+    return {
+        **shifted,
+        "steps": refinement["steps"] + shifted["steps"],
+        "gradient_calls": refinement["gradient_calls"] + shifted["gradient_calls"],
+    }
 
 
 def _exclusion_reason(refinement: dict, ts_spectrum, metrics: dict) -> str:
@@ -379,14 +440,18 @@ def excluded_reactions() -> dict[str, str]:
     Every figure caption that reports a success rate must state this set.
 
     `BARRIERLESS` wins over whatever the record says, because those reactions
-    were excluded before any of them ran.  Records written before that set
-    existed report `scf_fail`, which E10 would otherwise class as an
-    infrastructure failure -- the opposite of the truth, since the SCF failed
-    precisely *because* there was no saddle to walk to.
+    have no saddle to find at all.  Records written before that set existed
+    report `scf_fail`, which E10 would otherwise class as an infrastructure
+    failure -- the opposite of the truth, since the SCF failed precisely
+    *because* there was no saddle to walk to.  rxn_09's older records say
+    `n_imaginary=0` for the same reason and are overridden the same way.
+
+    `systems.exclusion_reason` distinguishes the four that were pre-registered
+    from rxn_09, which was excluded after E01 measured it.
     """
     # Listed whether or not a record exists: the exclusion is a property of the
     # reaction, not of whether anyone got round to running it.
-    out = {rid: BARRIERLESS_REASON for rid in sorted(BARRIERLESS)}
+    out = {rid: exclusion_reason(rid) for rid in sorted(BARRIERLESS)}
     for rec in common.load_records(EXPERIMENT):
         metrics = rec.get("metrics", {})
         if rec["key"] in BARRIERLESS:

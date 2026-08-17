@@ -28,7 +28,7 @@ import json
 import common
 import spectra
 from levels import VERIFY
-from systems import by_id
+from systems import BARRIERLESS, by_id
 
 e01 = importlib.import_module("01_reference_states")
 
@@ -154,11 +154,22 @@ def spin_check(args) -> dict:
 
 
 def barrierless(excluded: dict[str, str]) -> list[str]:
-    """Reactions E01 could not give a saddle to at all."""
+    """Reactions E01 could not give a saddle to at all.
+
+    `systems.BARRIERLESS` is consulted directly rather than matched against the
+    reason prose.  The prose is not a stable key: the five members carry two
+    different sentences (four pre-registered, rxn_09 excluded for cause after
+    E01 measured it), neither of which contains the `n_imaginary=0` that the
+    substring test below was written against -- so matching prose alone dropped
+    exactly the reactions this function names.  The substring tests stay for the
+    reactions that fail *dynamically*, which have no set to belong to.
+    """
     return sorted(
         rid
         for rid, reason in excluded.items()
-        if "n_imaginary=0" in reason or "did not converge" in reason
+        if rid in BARRIERLESS
+        or "n_imaginary=0" in reason
+        or "did not converge" in reason
     )
 
 

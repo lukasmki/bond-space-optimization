@@ -12,6 +12,24 @@ from ase import Atoms, units
 from ase.calculators.calculator import Calculator, all_changes
 
 
+def _set_grid_level(mf, grid_level: int | None) -> None:
+    """Set the DFT quadrature grid, or leave PySCF's default (level 3) alone.
+
+    Set on the mean-field object before any scanner is built and before the
+    first `grids.build()`, which is when `level` is read.  It survives
+    `density_fit()` and `nuc_grad_method()` because both wrap this same object
+    rather than constructing a new grid.
+
+    The grid is not a free knob for this code in particular.  A Mayer bond order
+    is a trace over the density and overlap matrices, and `bo_gradient` differs
+    it through a CPHF solve -- so XC quadrature noise propagates into the bond
+    orders, into the forces the drives follow, and into the shallow imaginary
+    modes E01 has to resolve (rxn_15's is 263i, rxn_12's 489i).
+    """
+    if grid_level is not None:
+        mf.grids.level = grid_level
+
+
 class PySCFCalculator(Calculator):
     implemented_properties = ["energy", "forces"]
 
@@ -27,6 +45,7 @@ class PySCFCalculator(Calculator):
         bo_grad_atoms: list[int] | None = None,
         level_shift: float | tuple[float, float] = 0.0,
         conv_tol: float = 1e-6,
+        grid_level: int | None = None,
         reuse_guess: bool = True,
         **kwargs,
     ):
@@ -64,6 +83,7 @@ class PySCFCalculator(Calculator):
             .set(conv_tol=conv_tol, level_shift=level_shift)
             .density_fit()
         )
+        _set_grid_level(self.energy_pipe, grid_level)
         self.forces_scanner: grad.rhf.SCF_GradScanner = (
             self.energy_pipe.nuc_grad_method().as_scanner()
         )
@@ -138,6 +158,7 @@ class BondFluxCalculator(Calculator):
         verbose: int = 0,
         threads: int | None = None,
         conv_tol: float = 1e-6,
+        grid_level: int | None = None,
         reuse_guess: bool = True,
         **kwargs,
     ):
@@ -163,6 +184,7 @@ class BondFluxCalculator(Calculator):
             .set(conv_tol=conv_tol, level_shift=level_shift)
             .density_fit()
         )
+        _set_grid_level(self.energy_pipe, grid_level)
         self.forces_scanner: grad.rhf.SCF_GradScanner = (
             self.energy_pipe.nuc_grad_method().as_scanner()
         )

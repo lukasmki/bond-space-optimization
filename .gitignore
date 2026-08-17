@@ -17,3 +17,6 @@ data/*/
 
 # Example outputs
 examples/out/
+
+# Smoke-run output; see common.parse_args for why it is a separate tree
+experiments/results-smoke/

@@ -90,9 +90,9 @@ The same runs scored five ways, each strictly harder than the last:
 
 | Level | Purpose | Settings |
 |---|---|---|
-| `PRODUCTION` | every bond-space drive | UKS/ωB97X-D3/cc-pVDZ, DF, `conv_tol=1e-6`, `level_shift=(0.3,0.2)` — matches `data/` exactly |
-| `VERIFY` | every Hessian, frequency, IRC, energy comparison | same functional/basis, DF, **`conv_tol=1e-10`, `level_shift=0`** |
-| `CHEAP` | `--smoke` and CI | STO-3G |
+| `PRODUCTION` | every bond-space drive | UKS/ωB97X-D3/cc-pVTZ, DF, grid level 4, `conv_tol=1e-6`, `level_shift=(0.3,0.2)` |
+| `VERIFY` | every Hessian, frequency, IRC, energy comparison | same functional/basis/grid, DF, **`conv_tol=1e-10`, `level_shift=0`** |
+| `CHEAP` | `--smoke` and CI | STO-3G, same grid and `conv_tol` as the level it stands in for |
 
 The split is not cosmetic. Both calculators default to `conv_tol=1e-6`, which is
 fine for driving a geometry but far too loose to differentiate twice — a shallow
@@ -102,6 +102,26 @@ saddle's imaginary frequency would be indistinguishable from SCF noise. Hence th
 `level_shift` shifts nothing at convergence, so VERIFY dropping it is a **check**:
 converged results must agree with PRODUCTION's, and a disagreement is a bug, not a
 finding. E08 measures it.
+
+**Functional, basis and grid are shared by construction, not by coincidence.**
+An E01 reference and an E02 drive are compared directly — T2 is an RMSD between
+them and every barrier is a difference of their energies — so a basis that
+differed between the two would be measured as method error. Only `conv_tol` and
+`level_shift` may differ, and both are checks rather than choices.
+
+**Grid level 4**, one step above PySCF's default (33.7k → 59.7k points on
+water/STO-3G). A Mayer bond order is a trace over the density and overlap
+matrices and `bo_gradient` differentiates it through a CPHF solve, so XC
+quadrature noise reaches the bond orders, the forces the drives follow, and the
+shallow imaginary modes E01 has to resolve — `rxn_15`'s is 263i, `rxn_12`'s
+489i. Set via the `grid_level` kwarg on both calculators; `None` keeps PySCF's
+default.
+
+**cc-pVTZ is not what `data/` ran.** `data/1-run.py` is cc-pVDZ, so the numbers
+here do not reproduce that study and are not comparable to its 12/19 and 8/19
+figures — which were already not regenerable (see the note under §5). E08's
+basis ladder carries a `cc-pvdz` row, so what the move to triple zeta bought is
+measured rather than assumed.
 
 ### The SCF guess is not free
 
@@ -146,8 +166,21 @@ E01 is a hard prerequisite — every other TS experiment skips reactions whose
 reference could not be verified, so running them first yields an empty study
 rather than a wrong one.
 
-**Gate on E01:** if fewer than ~13 of 19 references verify, stop and reconsider
-the level of theory before spending cluster time on E02–E06.
+**Gate on E01:** five of the nineteen are barrierless (`systems.BARRIERLESS`)
+and have no saddle to find, so **14 is the ceiling**. If fewer than ~12 of those
+14 verify, stop and reconsider the level of theory before spending cluster time
+on E02–E06.
+
+**E01 endpoints are separated asymptotes.** A reference R or P is fragmented,
+pulled apart to 5 Å and *then* relaxed (`spectra.relax_asymptote`), so every
+barrier here is an asymptotic barrier. This is not cosmetic. Relaxing a contact
+pair as supplied lets it react: `rxn_11`'s dataset product is two OH radicals
+with every atom 0.97–0.98 Å from a neighbour, and it relaxes into `H2O + O` —
+whose energy comes back bit-identical to `rxn_04`'s product. The same effect on
+IRC termini is what made `rxn_11` and `rxn_13` report saddles connecting the
+wrong species. Each terminus records `label` (asymptotic, decides T4) and
+`label_contact` (what it would have been called in contact), so the difference
+is in the record rather than in a footnote.
 
 ### Flags
 
@@ -245,7 +278,8 @@ how a benchmark lies about its denominator.
   must be able to `import` the experiment modules, and `1-run.py` is not an
   importable module name.
 - The array index selects a **registry index**, not a reaction id. Most
-  experiments have job counts unrelated to 19 (496 for the ablations).
+  experiments have job counts unrelated to 19 (434 for the ablations). Ask
+  `registry.py` for the counts rather than copying them from here.
 - `data/HCombustion-paths/` is empty while `data/analysis.ipynb` reads
   `HCombustion-combined/`, so the existing 12/19 and 8/19 numbers are **not
   regenerable from the scripts on disk**. This suite supersedes rather than

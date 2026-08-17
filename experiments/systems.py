@@ -235,10 +235,22 @@ SPIN_NONCONSERVING = frozenset(
 #: fixed-spin UKS SCF stops converging, which is how 05, 06 and 08 spent
 #: 19-53 minutes each before raising.
 #:
-#: rxn_09 and rxn_15 are spin-non-conserving too but are *not* here: their
-#: fragments have internal structure, they verify, and both are in
-#: ABLATION_SUBSET.
-BARRIERLESS = frozenset({"rxn_05", "rxn_06", "rxn_07", "rxn_08"})
+#: rxn_09 was expected to escape this on the grounds that its fragments have
+#: internal structure, and it was left out of the pre-registered set on that
+#: guess.  The guess was wrong, and E01 measured it: HO2 -> H + O2 breaks one
+#: O-H bond, Sella converged to a *minimum* (omega = -14i cm^-1, below
+#: IMAGINARY_CUTOFF_CM), and the relaxed reactant and product are the same
+#: structure -- both label as HO2, 0.0003 kcal/mol apart.  That is rxn_06's
+#: pathology exactly: at a fixed multiplicity the separated fragments fall back
+#: into the bound molecule, so R and P are one state with nothing between them.
+#: It is therefore excluded *for cause* rather than by pre-registration, and
+#: EXCLUSION_REASON keeps the two apart so the paper cannot claim more foresight
+#: than it had.
+#:
+#: rxn_15 is spin-non-conserving too but is *not* here: it breaks the O-O bond
+#: of H2O2 into two fragments that each retain a bond, it verifies (1 imaginary
+#: mode at -263i, IRC connecting), and it stays in ABLATION_SUBSET.
+BARRIERLESS = frozenset({"rxn_05", "rxn_06", "rxn_07", "rxn_08", "rxn_09"})
 
 #: The reason string used wherever a barrierless reaction is excluded, so E10
 #: and the paper quote one sentence rather than three paraphrases.
@@ -246,6 +258,28 @@ BARRIERLESS_REASON = (
     "barrierless single-bond dissociation: no first-order saddle at fixed spin "
     "(pre-registered)"
 )
+
+#: The same exclusion, reached the other way round: by running the reaction and
+#: finding no saddle, rather than by declaring it in advance.  Kept as its own
+#: sentence because "(pre-registered)" would be a false claim on rxn_09.
+DISSOCIATIVE_REASON = (
+    "barrierless single-bond dissociation: refinement converged to a minimum "
+    "and R and P relax to one structure (excluded for cause, see systems.py)"
+)
+
+#: Reaction -> the sentence that explains its exclusion.  Anything in
+#: BARRIERLESS but absent here was pre-registered; use `exclusion_reason()`
+#: rather than reading this directly.
+_EXCLUSION_REASON = {"rxn_09": DISSOCIATIVE_REASON}
+
+
+def exclusion_reason(reaction: str) -> str:
+    """Why `reaction` has no saddle to find, in one sentence.
+
+    E01 and E10 both quote this, so the pre-registered exclusions and the
+    for-cause one cannot drift into paraphrases of each other.
+    """
+    return _EXCLUSION_REASON.get(reaction, BARRIERLESS_REASON)
 
 
 def _legacy_rxn_data() -> dict:
@@ -345,6 +379,14 @@ def _check_consistency(reactions: Sequence[Reaction]) -> None:
 #: Fixed subset for the ablations (E08) and the target sweep (E05), chosen to
 #: span the four categories with two reactions each.  Pre-registered so that
 #: the subset cannot be picked after seeing which reactions do well.
+#:
+#: It is now seven, not eight.  rxn_09 was the second `ad` entry and turned out
+#: to be barrierless (see BARRIERLESS), so it has no verified reference to score
+#: T2-T4 against.  It is *removed and not replaced*: dropping a reaction for a
+#: stated cause is defensible, but promoting a substitute chosen after seeing
+#: which reactions did well is the exact thing pre-registering the subset was
+#: meant to prevent.  rxn_15 therefore stands alone for `ad`, and the four
+#: remaining `ad` reactions (05-08) were all excluded before any of this ran.
 ABLATION_SUBSET = (
     "rxn_03",
     "rxn_10",  # hydrogen transfer
@@ -352,6 +394,5 @@ ABLATION_SUBSET = (
     "rxn_12",  # oxygen transfer
     "rxn_04",
     "rxn_16",  # substitution-like
-    "rxn_09",
-    "rxn_15",  # association/dissociation (both spin-nonconserving)
+    "rxn_15",  # association/dissociation (spin-nonconserving)
 )

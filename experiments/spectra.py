@@ -394,12 +394,12 @@ def run_irc(
 # --------------------------------------------------------------------------
 
 
-def species_label(atoms: Atoms, thresh: float = 0.5) -> str:
-    """Canonical "H2O + OH"-style label, via data/network.py's fragmenter.
+def _network():
+    """`data/network.py`, imported once and reused.
 
-    Reusing the network module's labeller means E01, E02 and E07 all agree on
-    what counts as the same species -- three independent definitions would be
-    three ways to disagree about whether a run succeeded.
+    The fragmenter, the labeller and the separator below must all agree on what
+    a fragment is; importing the one module three times over is how they would
+    stop agreeing.
     """
     import sys
     from pathlib import Path
@@ -409,7 +409,17 @@ def species_label(atoms: Atoms, thresh: float = 0.5) -> str:
         sys.path.insert(0, str(data))
     import network  # type: ignore[import-not-found]
 
-    return network.species_label(atoms, thresh=thresh)
+    return network
+
+
+def species_label(atoms: Atoms, thresh: float = 0.5) -> str:
+    """Canonical "H2O + OH"-style label, via data/network.py's fragmenter.
+
+    Reusing the network module's labeller means E01, E02 and E07 all agree on
+    what counts as the same species -- three independent definitions would be
+    three ways to disagree about whether a run succeeded.
+    """
+    return _network().species_label(atoms, thresh=thresh)
 
 
 def fragment_separation(atoms: Atoms, thresh: float = 0.5) -> float | None:
@@ -421,25 +431,103 @@ def fragment_separation(atoms: Atoms, thresh: float = 0.5) -> float | None:
     describes, and so whether a relaxation that was supposed to separate the
     products actually did.  ``None`` when everything is one fragment.
     """
-    import sys
-    from pathlib import Path
-
-    data = Path(__file__).parent.parent / "data"
-    if str(data) not in sys.path:
-        sys.path.insert(0, str(data))
-    import network  # type: ignore[import-not-found]
-
-    parts = network.fragments(atoms, thresh)
+    parts = _network().fragments(atoms, thresh)
     if len(parts) < 2:
         return None
-    distances = atoms.get_all_distances()
+    return _closest_approach(atoms.get_positions(), parts)
+
+
+def _closest_approach(positions: np.ndarray, parts: list) -> float:
+    """Smallest distance between atoms of two *different* fragments."""
     return float(
         min(
-            distances[np.ix_(a, b)].min()
+            np.linalg.norm(
+                positions[a][:, None, :] - positions[b][None, :, :], axis=-1
+            ).min()
             for i, a in enumerate(parts)
             for b in parts[i + 1 :]
         )
     )
+
+
+def separate_fragments(
+    atoms: Atoms, *, gap: float = 5.0, thresh: float = 0.5
+) -> tuple[Atoms, bool]:
+    """Pull a multi-fragment structure apart to `gap` Angstrom, rigidly.
+
+    Returns the structure and whether anything moved.  One fragment means there
+    is no asymptote to go to, and the input comes back untouched.
+
+    This exists because a *contact* pair is not the state its label claims it
+    is.  rxn_11's dataset product is two OH radicals with every atom 0.97-0.98
+    Ang from a neighbour: relaxing it recombines to H2O + O, whose energy comes
+    out bit-identical to rxn_04's product, and the reaction is then recorded as
+    connecting the wrong species.  rxn_13's HO + HO2 does the same across a
+    2.85 kcal/mol reverse barrier, shallow enough that *both* IRC branches fell
+    back into H2O + O2.  Neither is a finding about the method; both are the
+    labeller describing what the fragments reacted into.
+
+    Fragments are translated rigidly along their offsets from the global
+    centroid, so every internal coordinate is preserved and the relaxation that
+    follows starts from the same intramolecular geometry it would have had.
+    """
+    parts = _network().fragments(atoms, thresh)
+    if len(parts) < 2:
+        return atoms.copy(), False
+
+    positions = atoms.get_positions()
+    origin = positions.mean(axis=0)
+    directions = []
+    for k, idx in enumerate(parts):
+        offset = positions[idx].mean(axis=0) - origin
+        norm = float(np.linalg.norm(offset))
+        # Coincident centroids (one fragment wrapped around another) leave no
+        # axis to push along, so fall back to the coordinate axes in turn.
+        directions.append(np.eye(3)[k % 3] if norm < 1e-6 else offset / norm)
+
+    # Scanned rather than solved: with the fragments rigid this is one scalar,
+    # the whole loop is pure numpy, and a closed form would still need the
+    # degenerate-direction guard above.
+    trial = positions
+    for scale in np.arange(0.0, 40.0, 0.25):
+        trial = positions.copy()
+        for idx, direction in zip(parts, directions):
+            trial[idx] = positions[idx] + scale * direction
+        if _closest_approach(trial, parts) >= gap:
+            break
+
+    work = atoms.copy()
+    work.set_positions(trial)
+    return work, True
+
+
+def relax_asymptote(
+    atoms: Atoms,
+    charge: int,
+    spin: int,
+    level: Level,
+    *,
+    gap: float = 5.0,
+    thresh: float = 0.5,
+    **relax_kw,
+) -> tuple[Atoms, bool, int, bool]:
+    """Relax to the separated-fragment asymptote.
+
+    Returns ``(atoms, converged, steps, separated)``.
+
+    The reference state of a bimolecular endpoint is the pair at infinity, not
+    whatever contact complex the dataset happens to supply.  That is the
+    convention barrier heights are quoted against, and it is the only one under
+    which an endpoint label is stable -- `separate_fragments` documents what
+    goes wrong without it.
+
+    A single-fragment structure is relaxed exactly as before, so this is a
+    no-op for every unimolecular endpoint (HO2, H2O2, ...).
+    """
+    relax_kw.setdefault("internal", True)
+    work, separated = separate_fragments(atoms, gap=gap, thresh=thresh)
+    relaxed, converged, steps = relax(work, charge, spin, level, **relax_kw)
+    return relaxed, converged, steps, separated
 
 
 def irc_connects(
@@ -469,21 +557,49 @@ def irc_connects(
     stopped with two OH radicals still 1.85 Ang apart at a Mayer order of 0.95,
     which the fragmenter then labelled `H2O2` and the run recorded as an IRC
     that connects the wrong species.
+
+    Tightening the relaxation fixed the branch that stopped too early and
+    exposed the opposite failure, which is what `relax_asymptote` is for: a
+    terminus that *is* two fragments in contact relaxes all the way into their
+    reaction product, and the label then names a species the IRC never visited.
+    Termini are therefore separated before relaxing, and the contact label is
+    recorded beside the asymptotic one as `label_contact` so the difference is
+    visible rather than assumed.  It is computed only where the two can differ:
+    with one fragment, `relax_asymptote` *is* the plain relaxation.
+
+    `reactant` and `product` are labelled as given, so callers must pass
+    endpoints already relaxed to their own asymptote -- E01 writes exactly those
+    into its reference frames, and `drive.py` reads them back from there.
     """
     want = {species_label(reactant, thresh), species_label(product, thresh)}
     got = {}
     for direction, result in irc.items():
-        relaxed, converged, _ = relax(
+        relaxed, converged, _, separated = relax_asymptote(
             result["atoms"],
             charge,
             spin,
             level,
+            thresh=thresh,
             fmax=relax_fmax,
             steps=relax_steps,
-            internal=True,
         )
+        label = species_label(relaxed, thresh)
+        contact = label
+        if separated:
+            in_contact, _, _ = relax(
+                result["atoms"],
+                charge,
+                spin,
+                level,
+                fmax=relax_fmax,
+                steps=relax_steps,
+                internal=True,
+            )
+            contact = species_label(in_contact, thresh)
         got[direction] = {
-            "label": species_label(relaxed, thresh),
+            "label": label,
+            "label_contact": contact,
+            "separated": separated,
             "relax_converged": converged,
             "separation": fragment_separation(relaxed, thresh),
             "atoms": relaxed,

@@ -497,9 +497,23 @@ def parse_args(parser: argparse.ArgumentParser) -> argparse.Namespace:
     reactions have references in order to pick its smoke jobs -- so the smoke
     flag has to be visible from the moment it is parsed.
     """
-    global SMOKE
+    global SMOKE, RESULTS, CACHE
     args = parser.parse_args()
     SMOKE = bool(getattr(args, "smoke", False))
+    if SMOKE:
+        # Smoke output goes to its own tree.  It used to land on top of the
+        # production results, and a `--smoke` run of E01 is byte-for-byte
+        # destructive: same record path, same `results/reference/*.xyz`, same
+        # `-mode.npy`, overwritten with STO-3G.  A differing `inputs_hash` stops
+        # a smoke record being *read* as a result but does nothing to stop it
+        # being written over one, and hours of cluster output are gone with no
+        # error and nothing in git to restore from.
+        #
+        # Rebinding here rather than at import: `record_path`, `traj_path` and
+        # every `common.RESULTS / ...` in the experiment scripts resolve the
+        # name at call time, and `parse_args` runs before any of them.
+        RESULTS = HERE / "results-smoke"
+        CACHE = RESULTS / "cache"
     return args
 
 

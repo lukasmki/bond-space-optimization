@@ -1,7 +1,8 @@
 """E08 -- robustness: how sensitive is the result to knobs a user must choose?
 
 One factor at a time around E02's L1 configuration, on the pre-registered
-eight-reaction subset in systems.ABLATION_SUBSET.  T4 is not scored here --
+subset in systems.ABLATION_SUBSET -- seven reactions, the eighth having been
+dropped for cause once E01 found it barrierless.  T4 is not scored here --
 hundreds of saddle refinements would dominate the cost of the whole suite --
 so the metrics stop at T3, which is enough to see a knob change the answer.
 
@@ -24,16 +25,17 @@ is a bug rather than a finding:
   * **zvector** is exact, not an approximation, so it must give the same
     endpoint as the direct path to solver tolerance.
 
-With eight reactions most cells have wide intervals.  The analysis reports
+With seven reactions most cells have wide intervals.  The analysis reports
 them and refuses to order settings whose intervals overlap.
 
-    sbatch --array=0-495%50 experiments/run.slurm 08_ablations.py
+    sbatch --array=0-433%50 experiments/run.slurm 08_ablations.py
 """
 
 from __future__ import annotations
 
 import argparse
 import importlib
+from dataclasses import replace
 
 from ase.optimize import BFGS, FIRE2, LBFGS
 
@@ -75,33 +77,18 @@ def _configure(knob, value, base_level: Level, args) -> tuple[Level, dict]:
     }
     if knob in ("reference", "perturb"):
         return level, kwargs
+    # `replace` throughout: these were positional rebuilds, which stop at
+    # whatever fields existed when they were written.  Adding `grid_level` to
+    # `Level` silently reverted every ablation row to PySCF's default grid --
+    # a one-factor-at-a-time study is worthless if the rows change two things.
     if knob == "basis":
-        level = Level(
-            f"{base_level.name}-{value}",
-            base_level.xc,
-            str(value),
-            base_level.conv_tol,
-            base_level.level_shift,
-            base_level.density_fit,
-        )
+        level = replace(base_level, name=f"{base_level.name}-{value}", basis=str(value))
     elif knob == "level_shift":
         shift = tuple(value) if isinstance(value, (list, tuple)) else float(value)
-        level = Level(
-            f"{base_level.name}-ls",
-            base_level.xc,
-            base_level.basis,
-            base_level.conv_tol,
-            shift,
-            base_level.density_fit,
-        )
+        level = replace(base_level, name=f"{base_level.name}-ls", level_shift=shift)
     elif knob == "density_fit":
-        level = Level(
-            f"{base_level.name}-nodf",
-            base_level.xc,
-            base_level.basis,
-            base_level.conv_tol,
-            base_level.level_shift,
-            bool(value),
+        level = replace(
+            base_level, name=f"{base_level.name}-nodf", density_fit=bool(value)
         )
     elif knob == "optimizer":
         optimizer, maxstep = OPTIMIZERS[str(value)]

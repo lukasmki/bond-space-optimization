@@ -31,10 +31,15 @@ ABLATIONS: tuple[tuple[str, object], ...] = (
     ("thresh", 0.1),
     ("thresh", 0.01),
     ("thresh", 1e-6),
+    # The ladder runs *below* the production basis, which is now cc-pVTZ -- a
+    # `("basis", "cc-pvtz")` row would re-run the reference under another name
+    # and report a spurious zero-sensitivity cell.  cc-pVDZ takes that slot
+    # because it is where this study previously sat, so the row measures what
+    # the move to triple zeta actually bought.
     ("basis", "sto-3g"),
     ("basis", "6-31g*"),
     ("basis", "def2-svp"),
-    ("basis", "cc-pvtz"),
+    ("basis", "cc-pvdz"),
     ("level_shift", 0.0),
     ("level_shift", 0.2),
     ("level_shift", (0.5, 0.4)),

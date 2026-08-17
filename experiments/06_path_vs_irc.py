@@ -68,7 +68,7 @@ def _subsample(frames: list[Atoms], limit: int) -> list[Atoms]:
 def _reference_irc(reaction: str) -> list[Atoms]:
     """E01's verified IRC, which supersedes data/HCombustion-irc/.
 
-    The shipped IRCs are at an unknown level of theory; comparing a cc-pVDZ
+    The shipped IRCs are at an unknown level of theory; comparing a cc-pVTZ
     drive against them would fold level-of-theory error into the path metric.
     They are still used as a cross-check of the IRC machinery itself -- see
     `legacy_irc` below.
